@@ -8,10 +8,10 @@ Valores de Status: `pendente` · `em andamento` · `concluído`.
 |---|---|---|---|---|---|---|
 | R1 | Contextualização NeoCore | `/sobre`, tela inicial | `app/sobre` | 1. Contextualização | 1 | pendente |
 | R2 | Arquitetura de referência justificada (Von Neumann + RISC) | `/sobre` | `docs/decisoes-arquitetura.md` | 2. Arquitetura escolhida | 2 | pendente |
-| R3 | Diagrama geral | diagrama SVG (exportar PNG) | `components/diagram` | 3. Diagrama geral | 2–4 | pendente |
+| R3 | Diagrama geral | diagrama SVG (exportar PNG) | `components/diagram` | 3. Diagrama geral | 2–4 | em andamento |
 | R4 | CPU com ULA, UC e registradores | diagrama + painel de registradores | `alu.ts`, `controlUnit.ts` | 4. CPU | 3 | em andamento |
 | R5 | Hierarquia de memória e papel da cache | painel Cache + Stats + disco | `cache.ts`, `memory.ts` | 5. Hierarquia de memória | 4 | em andamento |
-| R6 | Barramentos de dados, endereços e controle | barramentos animados + sinais | `components/diagram/Bus` | 6. Barramentos | 4 | pendente |
+| R6 | Barramentos de dados, endereços e controle | barramentos animados + sinais | `components/diagram/Bus` | 6. Barramentos | 4 | em andamento |
 | R7 | Dispositivos de E/S | teclado, display, LED | `io.ts` | 6.1 E/S mapeada em memória | 6 | em andamento |
 | R8 | Fluxo de comunicação entre componentes | animação + timeline | `machine.ts` | 7. Fluxo de dados | 5–6 | em andamento |
 | R9 | Demonstração visual do ciclo | indicador de fase + microetapas | `controlUnit.ts` | 8. Ciclo fetch–decode–execute | 5 | em andamento |
@@ -37,3 +37,7 @@ Valores de Status: `pendente` · `em andamento` · `concluído`.
   - **R11 → em andamento:** cada microetapa tem título e explicação em português gerados pelo motor; falta o painel "O que está acontecendo".
 - **Fase 3 (Cache):** `cache.ts` implementado e integrado à busca, ao `LOAD` e ao `STORE` (145 testes, cobertura de 100% em `src/core`).
   - **R5 (em andamento):** a hierarquia registradores → cache L1 → RAM → disco está completa no motor. A cache tem mapeamento direto, write-through, no-write-allocate e bypass da E/S, com estatísticas de hits, misses, taxa de acerto e ciclos economizados. O laço do exemplo 2 atinge 23/34 ≈ 68% de acerto e roda em 258 ciclos, contra 350 sem cache. Falta a parte visual (painéis Cache e Stats, Fase 5).
+- **Fase 4 (Diagrama):** diagrama SVG em `src/components/diagram/` com os 17 componentes e os 3 barramentos, exportação para PNG e uma prévia navegável na página inicial (162 testes; o SVG é renderizado e conferido em todas as microetapas dos 3 exemplos).
+  - **R3 → em andamento:** diagrama geral completo e exportável em PNG; falta a seção 3 do relatório.
+  - **R6 → em andamento:** os três barramentos com cor, padrão de traço e rótulo próprios; o trecho em uso acende, com o valor e o sentido da transferência; o barramento de controle mostra os sinais do sistema. Falta a seção 6 do relatório.
+  - **R4, R5, R7, R8, R9 (em andamento):** CPU (UC, ULA, flags, registradores), cache, RAM, disco e E/S acendem conforme cada microetapa, e a UC mostra a fase atual. Faltam os painéis, a timeline e o indicador de fase completo (Fase 5).

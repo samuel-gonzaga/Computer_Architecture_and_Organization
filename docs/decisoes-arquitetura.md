@@ -107,6 +107,26 @@ Resumo da especificação já definida no `CLAUDE.md` §4:
 - **Exemplo 2:** o dado `passo` foi colocado em `0x20` (índice 0), fora das linhas 1–5 usadas pelo laço. Se ele ficasse logo depois do `HLT` (`0x0A`, índice 2), disputaria a linha com a instrução `LOAD` do laço (`0x02`), e as duas dariam MISS em toda volta. O objetivo do exemplo é mostrar o ganho no laço (§6.3), não esse conflito.
 - O campo `changes` continua listando apenas registradores, memória e saídas de E/S. O que acontece na cache aparece no campo `cache` da microetapa e em `lastEvent` de cada linha.
 
+### D15 — Diagrama geral (Fase 4, `src/components/diagram/`)
+- **Composição:** os três barramentos do sistema correm na horizontal. Acima deles ficam CPU, cache, RAM e disco; abaixo, os dispositivos de E/S. Cada componente se liga a cada barramento por uma derivação vertical, como no diagrama clássico de barramento de Stallings e Tanenbaum.
+- **A UI não interpreta nada além da MicroStep:** `highlights.ts` é uma função pura que traduz a microetapa no que acende. Os componentes acesos são exatamente os `activeComponents`; os valores marcados são exatamente os alvos de `changes`.
+- **Trecho do barramento em uso:** acende só o trecho entre a CPU e o componente mais distante entre os ativos. Em um HIT, o trecho vai só até a cache; em um MISS, até a RAM, passando pela cache, que guarda a cópia. A seta e o valor que "viaja" indicam o sentido: da CPU para fora em endereços, escritas e sinais de controle, e de fora para a CPU em leituras. No BOOT, o programa vai do disco para a RAM pelo barramento de dados, e RESET é difundido pelo barramento de controle inteiro.
+- **Sinais internos × sinais do sistema:** o barramento de controle mostra só os sinais que saem da CPU (`MEM_READ`, `MEM_WRITE`, `RESET`). Os sinais internos (`ALU_OP`, `REG_WRITE`, `PC_INC`, `IR_LOAD`, `PC_LOAD`, `HALT`) aparecem como etiquetas dentro da Unidade de Controle, e `CLOCK` aparece como uma onda quadrada que se destaca a cada pulso. Assim, o aluno não confunde controle interno da CPU com o barramento do sistema.
+- **Cor nunca é o único indicador (§6.5):** um componente ativo inverte as cores do bloco (fundo escuro, texto claro), o que funciona mesmo sem perceber cor. Cada barramento tem, além da cor fixa (endereços azul, dados verde, controle laranja), um **padrão de traço** próprio (tracejado longo, contínuo, pontilhado) e um rótulo escrito. Valores alterados ganham uma marca-texto amarela; flags em 1 ficam preenchidas e mostram o bit (`Z=1`).
+- **Movimento reduzido:** com `prefers-reduced-motion`, o valor aparece direto na posição final e as transições de cor são desligadas; os destaques continuam.
+- **Acessibilidade:** o SVG tem título e descrição (a microetapa atual), e cada componente é um grupo com nome acessível que indica quando está ativo.
+- **Exportar PNG:** o SVG é copiado com os estilos calculados embutidos e desenhado em um canvas com o dobro da resolução, para uso no relatório. Como a imagem gerada não tem acesso às fontes da página, ela usa uma fonte reserva sem serifa.
+- **Tipografia e tema:** IBM Plex Sans Condensed (rótulos, estilo folha de dados) e JetBrains Mono (valores). Tema claro "papel técnico" e escuro "bancada", seguindo a preferência do sistema; o seletor manual de tema fica para a Fase 5.
+
+### D16 — Prévia da Fase 4 e store (Fase 4)
+- `src/store/simulation.ts` (zustand) guarda o estado da máquina, a última microetapa e o **histórico** de estados anteriores, o que permite **voltar** com exatidão, já que os estados do motor são imutáveis.
+- A página inicial mostra o diagrama com uma barra **provisória** (Voltar, Próxima microetapa, Reset, Exportar PNG) só para verificar o diagrama. A Fase 5 a substitui pelos controles completos (§6.2) e pelos painéis.
+
+### D17 — Testes da interface sem dependências novas (Fase 4)
+- O critério "cada `ComponentId` e barramento acende conforme `MicroStep`" é verificado no Vitest renderizando o SVG real com `react-dom/server` (já instalado) em **todas** as microetapas dos 3 exemplos. Não foi preciso adicionar jsdom ou Testing Library (§3).
+- Os testes de interface rodam em um projeto separado do Vitest, com o React em modo produção, que renderiza cerca de 20 vezes mais rápido (≈3 ms contra ≈60 ms por diagrama). Eles verificam a estrutura do SVG, que não depende dos avisos do modo de desenvolvimento.
+- A cobertura mínima de 90% continua medida só em `src/core` (§8).
+
 ### D10 (revisão na Fase 3)
 - Com a cache, uma leitura custa **1 ciclo em HIT** e **5 em MISS** (1 + 4 de espera). A escrita custa sempre 5 (write-through).
 

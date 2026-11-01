@@ -9,7 +9,25 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["tests/core/**/*.test.ts"],
+    // O fluxo E2E (tests/e2e) roda no Playwright, não aqui.
+    projects: [
+      {
+        extends: true,
+        test: { name: "core", include: ["tests/core/**/*.test.ts"] },
+      },
+      {
+        // Parte pura e renderizável da interface (o SVG é gerado com react-dom/server).
+        // O React em modo produção renderiza ~20× mais rápido; os testes verificam a
+        // estrutura do SVG, que não depende dos avisos do modo de desenvolvimento.
+        extends: true,
+        oxc: { jsx: { runtime: "automatic", development: false } },
+        test: {
+          name: "components",
+          include: ["tests/components/**/*.test.{ts,tsx}"],
+          env: { NODE_ENV: "production" },
+        },
+      },
+    ],
     coverage: {
       provider: "v8",
       include: ["src/core/**/*.ts"],

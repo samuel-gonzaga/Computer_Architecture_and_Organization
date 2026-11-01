@@ -1,26 +1,378 @@
 @import "tailwindcss";
 
+/*
+ * Tema "bancada de laboratório": papel técnico com traço de nanquim (claro) e
+ * bancada noturna (escuro). As cores dos barramentos são fixas (§6.1):
+ * endereços = azul, dados = verde, controle = laranja.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --paper: #f3f0e8;
+  --paper-grid: #e3ddcf;
+  --surface: #fbfaf6;
+  --ink: #1a2132;
+  --ink-muted: #545b6b;
+  --line: #a9a291;
+  --active-bg: #1a2132;
+  --active-fg: #fbfaf6;
+  --marker: #ffd84d;
+  --marker-ink: #1a2132;
+  --screen: #10261a;
+  --screen-ink: #7dffa8;
+  --led-on: #e8452c;
+  --bus-address: #1f5fcf;
+  --bus-data: #0f7a45;
+  --bus-control: #b04b05;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: #11141b;
+    --paper-grid: #1a1f29;
+    --surface: #161a22;
+    --ink: #e5e8ef;
+    --ink-muted: #9ca3b4;
+    --line: #434b5c;
+    --active-bg: #e5e8ef;
+    --active-fg: #11141b;
+    --marker: #f2c53d;
+    --marker-ink: #11141b;
+    --screen: #07140d;
+    --screen-ink: #7dffa8;
+    --led-on: #ff6a4d;
+    --bus-address: #6ea4ff;
+    --bus-data: #45c483;
+    --bus-control: #ff9a4a;
   }
 }
 
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --font-sans: var(--font-plex-condensed);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-plex-condensed), "Arial Narrow", sans-serif;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Diagrama (SVG)                                                            */
+/* ------------------------------------------------------------------------ */
+
+.dg-root {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--font-plex-condensed), "Arial Narrow", sans-serif;
+}
+.dg-mono {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+.dg-paper {
+  fill: var(--paper);
+}
+.dg-grid-line {
+  fill: none;
+  stroke: var(--paper-grid);
+  stroke-width: 1;
+}
+
+.dg-text {
+  fill: var(--ink);
+}
+.dg-muted {
+  fill: var(--ink-muted);
+}
+.dg-caption {
+  fill: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.dg-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.dg-phase {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.dg-value {
+  font-weight: 500;
+}
+
+.dg-cpu {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.dg-frame {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+.dg-box {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+/* Componente ativo: "acende" invertendo as cores (não depende só de cor). */
+[data-active="true"] > .dg-box,
+[data-active="true"] > polygon.dg-box {
+  fill: var(--active-bg);
+  stroke: var(--active-bg);
+  stroke-width: 2.5;
+}
+[data-active="true"] .dg-text,
+[data-active="true"] .dg-caption,
+[data-active="true"] .dg-muted {
+  fill: var(--active-fg);
+}
+
+/* Valor que acabou de mudar: marca-texto. */
+.dg-changed {
+  fill: var(--marker);
+}
+[data-changed="true"] > .dg-text,
+[data-active="true"] [data-changed="true"] > .dg-text {
+  fill: var(--marker-ink);
+}
+
+/* Unidade de Controle */
+.dg-chip rect {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+}
+.dg-chip {
+  color: var(--ink);
+}
+.dg-chip text {
+  fill: currentColor;
+}
+[data-active="true"] .dg-chip {
+  color: var(--active-fg);
+}
+.dg-clock path {
+  fill: none;
+  stroke: var(--ink-muted);
+  stroke-width: 1.5;
+}
+.dg-clock text {
+  fill: var(--ink-muted);
+}
+.dg-clock[data-on="true"] path {
+  stroke-width: 2.5;
+}
+[data-active="true"] .dg-clock path {
+  stroke: var(--active-fg);
+}
+[data-active="true"] .dg-clock text {
+  fill: var(--active-fg);
+}
+
+/* Flags */
+.dg-flag rect {
+  fill: none;
+  stroke: var(--line);
+}
+.dg-flag text {
+  fill: var(--ink);
+}
+.dg-flag[data-set="true"] rect {
+  fill: var(--ink);
+  stroke: var(--ink);
+}
+.dg-flag[data-set="true"] text {
+  fill: var(--surface);
+  font-weight: 700;
+}
+[data-active="true"] .dg-flag rect {
+  stroke: var(--active-fg);
+}
+[data-active="true"] .dg-flag text {
+  fill: var(--active-fg);
+}
+[data-active="true"] .dg-flag[data-set="true"] rect {
+  fill: var(--active-fg);
+}
+[data-active="true"] .dg-flag[data-set="true"] text {
+  fill: var(--active-bg);
+}
+.dg-flag[data-changed="true"] rect {
+  fill: var(--marker);
+  stroke: var(--marker);
+}
+.dg-flag[data-changed="true"] text {
+  fill: var(--marker-ink);
+}
+
+/* Cache e RAM */
+.dg-cache-row > rect,
+.dg-ram-row > rect {
+  fill: transparent;
+  stroke: none;
+}
+.dg-cache-row[data-valid="false"] text {
+  opacity: 0.55;
+}
+.dg-cache-row[data-current="true"] > rect,
+.dg-ram-row[data-current="true"] > rect {
+  fill: var(--active-fg);
+}
+.dg-cache-row[data-current="true"] .dg-text,
+.dg-ram-row[data-current="true"] .dg-text {
+  fill: var(--active-bg);
+}
+.dg-pc-marker {
+  font-weight: 700;
+}
+.dg-badge rect {
+  fill: var(--active-fg);
+}
+.dg-badge text {
+  fill: var(--active-bg);
+  font-weight: 700;
+}
+.dg-badge {
+  outline: none;
+}
+:not([data-active="true"]) > .dg-badge rect {
+  fill: var(--ink);
+}
+:not([data-active="true"]) > .dg-badge text {
+  fill: var(--surface);
+}
+
+/* Disco, teclado, display e LED */
+.dg-disk-icon path,
+.dg-disk-icon ellipse {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+[data-active="true"] .dg-disk-icon path,
+[data-active="true"] .dg-disk-icon ellipse {
+  stroke: var(--active-fg);
+}
+.dg-keys rect {
+  fill: none;
+  stroke: var(--line);
+}
+[data-active="true"] .dg-keys rect {
+  stroke: var(--active-fg);
+}
+.dg-screen {
+  fill: var(--screen);
+}
+.dg-screen-digits {
+  fill: var(--screen-ink);
+  font-weight: 700;
+  white-space: pre;
+}
+[data-changed="true"] > .dg-screen-digits {
+  fill: var(--marker);
+}
+.dg-led {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2;
+}
+.dg-led[data-on="true"] {
+  fill: var(--led-on);
+  stroke: var(--led-on);
+}
+[data-active="true"] .dg-led {
+  stroke: var(--active-fg);
+}
+
+/* Barramentos: cor + padrão de traço + rótulo (§6.5). */
+.dg-bus,
+.dg-bus-active,
+.dg-tap {
+  fill: none;
+  stroke-linecap: round;
+}
+[data-bus="address"] {
+  --bus: var(--bus-address);
+  --bus-dash: 14 6;
+}
+[data-bus="data"] {
+  --bus: var(--bus-data);
+  --bus-dash: none;
+}
+[data-bus="control"] {
+  --bus: var(--bus-control);
+  --bus-dash: 2 6;
+}
+.dg-bus {
+  stroke: var(--bus);
+  stroke-width: 3;
+  stroke-dasharray: var(--bus-dash);
+  opacity: 0.4;
+}
+.dg-bus-active {
+  stroke: var(--bus);
+  stroke-width: 7;
+  stroke-dasharray: var(--bus-dash);
+}
+.dg-bus-label {
+  fill: var(--bus);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.dg-tap {
+  stroke: var(--bus);
+  stroke-width: 1.5;
+  opacity: 0.35;
+}
+.dg-junction {
+  fill: var(--bus);
+  opacity: 0.4;
+}
+.dg-tap-group[data-active="true"] .dg-tap,
+.dg-tap[data-active="true"] {
+  stroke-width: 3;
+  opacity: 1;
+}
+.dg-tap-group[data-active="true"] .dg-junction {
+  opacity: 1;
+}
+.dg-bus-arrow {
+  fill: var(--bus);
+}
+.dg-bus-pill rect {
+  fill: var(--bus);
+}
+.dg-bus-pill text {
+  fill: var(--paper);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dg-box,
+  .dg-text,
+  .dg-tap,
+  .dg-bus,
+  .dg-flag rect,
+  .dg-cache-row > rect,
+  .dg-ram-row > rect {
+    transition:
+      fill 160ms ease-out,
+      stroke 160ms ease-out,
+      opacity 160ms ease-out;
+  }
 }
