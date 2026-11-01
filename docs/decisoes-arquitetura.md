@@ -121,11 +121,41 @@ Resumo da especificação já definida no `CLAUDE.md` §4:
 ### D16 — Prévia da Fase 4 e store (Fase 4)
 - `src/store/simulation.ts` (zustand) guarda o estado da máquina, a última microetapa e o **histórico** de estados anteriores, o que permite **voltar** com exatidão, já que os estados do motor são imutáveis.
 - A página inicial mostra o diagrama com uma barra **provisória** (Voltar, Próxima microetapa, Reset, Exportar PNG) só para verificar o diagrama. A Fase 5 a substitui pelos controles completos (§6.2) e pelos painéis.
+- *Revisão na Fase 5:* a barra provisória foi substituída, e o histórico passou a ser uma lista de frames com cursor (D18).
 
 ### D17 — Testes da interface sem dependências novas (Fase 4)
 - O critério "cada `ComponentId` e barramento acende conforme `MicroStep`" é verificado no Vitest renderizando o SVG real com `react-dom/server` (já instalado) em **todas** as microetapas dos 3 exemplos. Não foi preciso adicionar jsdom ou Testing Library (§3).
 - Os testes de interface rodam em um projeto separado do Vitest, com o React em modo produção, que renderiza cerca de 20 vezes mais rápido (≈3 ms contra ≈60 ms por diagrama). Eles verificam a estrutura do SVG, que não depende dos avisos do modo de desenvolvimento.
 - A cobertura mínima de 90% continua medida só em `src/core` (§8).
+
+### D18 — Histórico da simulação: frames e cursor (Fase 5, `store/simulation.ts`)
+- A store guarda a execução como uma lista de **frames** (estado da máquina + a microetapa que o produziu) e um **cursor**. *Voltar*, *avançar* e clicar na *linha do tempo* apenas movem o cursor.
+- Avançar a partir de um frame anterior **reaproveita** o frame seguinte em vez de recalcular. Isso é correto porque o motor é determinístico: o resultado seria idêntico (testado).
+- **Mudar a entrada do teclado descarta os frames seguintes**, porque o "futuro" dependia da entrada antiga. Mudanças de programa (carregar) e Reset recomeçam do boot.
+- Reset e carregar mantêm a entrada atual do teclado. Carregar um **exemplo** aplica a entrada sugerida por ele (5 no exemplo 1).
+- O histórico tem o mesmo limite de `run()`: 10.000 microetapas. Ao atingi-lo, a execução para com o aviso de possível laço infinito.
+
+### D19 — Controles e velocidade (Fase 5, `components/controls/`)
+- Velocidade 1× = 2,5 microetapas por segundo (400 ms cada); as opções vão de 0,25× (1,6 s) a 4× (100 ms). A execução contínua para sozinha no `HLT`, numa exceção ou no limite de microetapas.
+- **Atalhos (§6.2):** → microetapa, Shift+→ instrução, ← voltar, Espaço executar/pausar, R reset. Eles ficam desligados enquanto o foco está em campos de texto, seletores e abas, para não atrapalhar a digitação nem a navegação por setas. Cada botão anuncia seu atalho (`aria-keyshortcuts` e dica).
+- O campo do **teclado (0xF0)** aceita decimal de −32768 a 65535 (negativos em complemento de dois) ou hexadecimal `0x0000`–`0xFFFF`; um valor inválido é indicado no próprio campo e não é aplicado.
+- **Tema:** segue o sistema por padrão; o botão alterna sistema → claro → escuro e guarda a escolha no navegador (aplicada antes da primeira pintura, sem piscar).
+- O **indicador de fase** destaca BUSCA, DECODIFICAÇÃO ou EXECUÇÃO conforme a última microetapa executada e mostra "Carga do programa" no boot e "Parada" depois do `HLT` ou de uma exceção.
+
+### D20 — Painéis e editor (Fase 5)
+- **Registradores:** hex e decimal sempre visíveis; o binário aparece ao passar o mouse ou focar com o teclado (o IR aparece separado em opcode | rd | rs | imm/addr). O valor com sinal aparece só em R0–R3 e MDR: no PC, no MAR e no IR o número não representa uma quantidade com sinal. Os valores alterados piscam uma vez (sem animação com movimento reduzido, mas a marca continua).
+- **Campos da instrução** têm cores próprias (opcode, rd, rs, imm/addr), mas também ficam separados por espaço e rotulados, para não depender só de cor (§6.5).
+- **Memória:** grade 16 × 16 com o PC contornado, o endereço acessado preenchido e o valor alterado com marca-texto. A linha `0xF0` mostra os dispositivos de E/S, deixando claro que ali não há RAM.
+- **Linha do tempo:** mostra até 150 microetapas antes e depois da atual (o histórico pode chegar a 10.000) e rola só a própria lista.
+- **Estatísticas:** ciclos, instruções, microetapas, CPI, HIT, MISS, taxa de acerto, ciclos economizados e ciclos sem cache.
+- **Editor:** ao lado de cada linha aparece o endereço, o código em hex e em binário com campos, ou o erro daquela linha. A lista completa de erros fica abaixo. "Montar e carregar" fica desabilitado enquanto houver erro (§6.4).
+- **Arquivo `.neocore.json` (R13):** guarda nome, código assembly e entrada do teclado (`{"format": "neocore-lab/programa", "version": 1, ...}`). A importação valida o arquivo e coloca o código no editor; o usuário confere e então carrega.
+- **Layout (§6.1):** em telas a partir de 1280 px, o editor (recolhível) fica à esquerda, o diagrama e as abas no centro e os painéis à direita. Em telas menores, tudo vira uma coluna, sem rolagem horizontal da página (o diagrama rola dentro do próprio quadro).
+
+### D21 — Organização dos testes (Fase 5)
+- **Vitest, projeto `core`:** o motor, com cobertura mínima de 90% (§8).
+- **Vitest, projeto `components`:** a store (critério de aceite da fase: voltar/avançar consistentes e programa próprio), os painéis e o diagrama renderizados com `react-dom/server`, a formatação e o arquivo `.neocore.json`.
+- **Playwright:** o único fluxo E2E da §8 (`tests/e2e/simulador.spec.ts`), em uma porta dedicada (3100) para nunca reaproveitar por engano outro servidor aberto na porta 3000.
 
 ### D10 (revisão na Fase 3)
 - Com a cache, uma leitura custa **1 ciclo em HIT** e **5 em MISS** (1 + 4 de espera). A escrita custa sempre 5 (write-through).

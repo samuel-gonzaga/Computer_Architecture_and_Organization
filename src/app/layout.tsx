@@ -19,12 +19,19 @@ export const metadata: Metadata = {
     "Simulador didático do ciclo de busca, decodificação e execução de uma CPU.",
 };
 
+// Aplica o tema escolhido antes da primeira pintura (evita piscar o tema errado).
+const THEME_SCRIPT = `try{var t=localStorage.getItem("neocore-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
       className={`${plexCondensed.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

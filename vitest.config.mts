@@ -23,7 +23,7 @@ export default defineConfig({
         oxc: { jsx: { runtime: "automatic", development: false } },
         test: {
           name: "components",
-          include: ["tests/components/**/*.test.{ts,tsx}"],
+          include: ["tests/components/**/*.test.{ts,tsx}", "tests/store/**/*.test.ts"],
           env: { NODE_ENV: "production" },
         },
       },

@@ -4,8 +4,11 @@
  * Tema "bancada de laboratório": papel técnico com traço de nanquim (claro) e
  * bancada noturna (escuro). As cores dos barramentos são fixas (§6.1):
  * endereços = azul, dados = verde, controle = laranja.
+ *
+ * O tema segue o sistema, a menos que o usuário escolha um (data-theme no <html>).
  */
 :root {
+  color-scheme: light;
   --paper: #f3f0e8;
   --paper-grid: #e3ddcf;
   --surface: #fbfaf6;
@@ -22,10 +25,16 @@
   --bus-address: #1f5fcf;
   --bus-data: #0f7a45;
   --bus-control: #b04b05;
+  --field-op: #7a2fd0;
+  --field-rd: #0b6f78;
+  --field-rs: #8a5a00;
+  --field-imm: #b01a57;
+  --danger: #b42318;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --paper: #11141b;
     --paper-grid: #1a1f29;
     --surface: #161a22;
@@ -42,7 +51,37 @@
     --bus-address: #6ea4ff;
     --bus-data: #45c483;
     --bus-control: #ff9a4a;
+    --field-op: #c39bff;
+    --field-rd: #5fd4dc;
+    --field-rs: #f0be4f;
+    --field-imm: #ff86b4;
+    --danger: #ff8a7a;
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #11141b;
+  --paper-grid: #1a1f29;
+  --surface: #161a22;
+  --ink: #e5e8ef;
+  --ink-muted: #9ca3b4;
+  --line: #434b5c;
+  --active-bg: #e5e8ef;
+  --active-fg: #11141b;
+  --marker: #f2c53d;
+  --marker-ink: #11141b;
+  --screen: #07140d;
+  --screen-ink: #7dffa8;
+  --led-on: #ff6a4d;
+  --bus-address: #6ea4ff;
+  --bus-data: #45c483;
+  --bus-control: #ff9a4a;
+  --field-op: #c39bff;
+  --field-rd: #5fd4dc;
+  --field-rs: #f0be4f;
+  --field-imm: #ff86b4;
+  --danger: #ff8a7a;
 }
 
 @theme inline {
@@ -51,6 +90,15 @@
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
   --color-line: var(--line);
+  --color-marker: var(--marker);
+  --color-marker-ink: var(--marker-ink);
+  --color-active: var(--active-bg);
+  --color-active-fg: var(--active-fg);
+  --color-field-op: var(--field-op);
+  --color-field-rd: var(--field-rd);
+  --color-field-rs: var(--field-rs);
+  --color-field-imm: var(--field-imm);
+  --color-danger: var(--danger);
   --font-sans: var(--font-plex-condensed);
   --font-mono: var(--font-jetbrains-mono);
 }
@@ -375,4 +423,47 @@ body {
       stroke 160ms ease-out,
       opacity 160ms ease-out;
   }
+}
+
+/* ------------------------------------------------------------------------ */
+/* Painéis                                                                   */
+/* ------------------------------------------------------------------------ */
+
+/* Valor que acabou de mudar: pisca uma vez (sem animação com movimento reduzido). */
+.flash {
+  background: var(--marker);
+  color: var(--marker-ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .flash {
+    animation: flash 1.2s ease-out;
+  }
+  @keyframes flash {
+    0%,
+    30% {
+      background: var(--marker);
+      color: var(--marker-ink);
+    }
+    45% {
+      background: transparent;
+    }
+    60%,
+    100% {
+      background: var(--marker);
+      color: var(--marker-ink);
+    }
+  }
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
 }

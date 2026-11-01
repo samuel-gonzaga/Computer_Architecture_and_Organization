@@ -95,10 +95,10 @@ describe("assembler — programas válidos", () => {
   it("gera a listagem com endereço e código de máquina por linha", () => {
     const result = assemble("inicio: LDI R1, 5 ; carrega\n\n.org 0x10\n.word 7");
     expect(result.ok && result.listing).toEqual([
-      { line: 1, source: "inicio: LDI R1, 5 ; carrega", address: 0x00, word: 0x3405 },
+      { line: 1, source: "inicio: LDI R1, 5 ; carrega", address: 0x00, word: 0x3405, kind: "instruction" },
       { line: 2, source: "" },
       { line: 3, source: ".org 0x10" },
-      { line: 4, source: ".word 7", address: 0x10, word: 7 },
+      { line: 4, source: ".word 7", address: 0x10, word: 7, kind: "data" },
     ]);
   });
 });

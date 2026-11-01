@@ -25,6 +25,7 @@ export type ListingLine = {
   readonly source: string;
   readonly address?: Address;
   readonly word?: Word;
+  readonly kind?: "instruction" | "data"; // presente quando a linha gerou uma palavra
 };
 
 export type AssembleResult =
@@ -78,13 +79,13 @@ export function assemble(source: string): AssembleResult {
   };
 
   const statements = firstPass(lines, ctx);
-  const words = new Map<number, { address: Address; word: Word }>(); // linha → código gerado
+  const words = new Map<number, { address: Address; word: Word; kind: "instruction" | "data" }>(); // linha → código gerado
   for (const statement of statements) {
     const word = statement.spec
       ? assembleInstruction(statement, statement.spec, ctx)
       : assembleWordDirective(statement, ctx);
     if (word !== undefined) {
-      words.set(statement.line, { address: statement.address, word });
+      words.set(statement.line, { address: statement.address, word, kind: statement.spec ? "instruction" : "data" });
     }
   }
 

@@ -18,7 +18,7 @@ Valores de Status: `pendente` · `em andamento` · `concluído`.
 | R10 | Simular ≥ 1 instrução com busca, decodificação e execução | exemplos 1–3 | `programs.ts` | 8.1 Execução passo a passo de `ADD R0, R1` | 5 | em andamento |
 | R11 | Etapas identificadas e explicadas | painel "O que está acontecendo" | `MicroStep.explanation` | 8 (tabelas de microetapas) | 5 | em andamento |
 | R12 | Valor pedagógico | `/tour` | `app/tour` | 9. Conclusão e trabalhos futuros | 7 | pendente |
-| R13 | Arquivo da simulação entregue | repositório + link Vercel + export `.neocore.json` | `README.md` | Apêndice A | — | pendente |
+| R13 | Arquivo da simulação entregue | repositório + link Vercel + export `.neocore.json` | `README.md` | Apêndice A | — | em andamento |
 | R14 | Vídeo ≤ 4 min no YouTube (não listado) | — | `docs/roteiro-video.md` | Apêndice B (link) | todas | pendente |
 
 ## Histórico
@@ -41,3 +41,10 @@ Valores de Status: `pendente` · `em andamento` · `concluído`.
   - **R3 → em andamento:** diagrama geral completo e exportável em PNG; falta a seção 3 do relatório.
   - **R6 → em andamento:** os três barramentos com cor, padrão de traço e rótulo próprios; o trecho em uso acende, com o valor e o sentido da transferência; o barramento de controle mostra os sinais do sistema. Falta a seção 6 do relatório.
   - **R4, R5, R7, R8, R9 (em andamento):** CPU (UC, ULA, flags, registradores), cache, RAM, disco e E/S acendem conforme cada microetapa, e a UC mostra a fase atual. Faltam os painéis, a timeline e o indicador de fase completo (Fase 5).
+- **Fase 5 (Painéis e controles):** a tela completa da §6.1 (controles, indicador de fase, editor, painéis e abas), com tema claro/escuro e atalhos (198 testes no Vitest + o fluxo E2E da §8 no Playwright).
+  - **R4 e R5 (em andamento):** painel de registradores e flags; abas Memória, Cache e Estatísticas. A parte do app está concluída; faltam as seções 4 e 5 do relatório.
+  - **R7 (em andamento):** campo do teclado (0xF0), display e LED no diagrama e na aba Memória. Falta a seção 6.1 do relatório.
+  - **R8 e R9 (em andamento):** linha do tempo clicável e indicador BUSCA → DECODIFICAÇÃO → EXECUÇÃO. Faltam as seções 7 e 8 do relatório.
+  - **R10 (em andamento):** os 3 exemplos carregam pelo editor e rodam até o `HLT`; o E2E confirma o exemplo 1 (entrada 5 → display 12). Falta a seção 8.1 do relatório.
+  - **R11 (em andamento):** o painel "O que está acontecendo" mostra o título, a explicação, a fase, o evento da cache, a espera e as alterações de cada microetapa, e os campos do IR na decodificação. Falta a tabela de microetapas do relatório.
+  - **R13 → em andamento:** exportar e importar `.neocore.json` no editor; faltam o README final e o link da Vercel (Fases 7–8).
