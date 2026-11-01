@@ -125,6 +125,13 @@ export type MicroStep = {
   waitCycles?: number;
 };
 
+/** Registradores dos dispositivos de E/S mapeados em memória. */
+export type IoDevices = {
+  readonly keyboard: Word; // 0xF0 — entrada
+  readonly display: Word; // 0xF1 — saída
+  readonly led: Word; // 0xF2 — LED/status
+};
+
 /** Estado completo e imutável da máquina simulada. */
 export type MachineState = {
   readonly registers: readonly [Word, Word, Word, Word]; // R0–R3
@@ -139,14 +146,12 @@ export type MachineState = {
     readonly hits: number;
     readonly misses: number;
   };
-  readonly io: {
-    readonly keyboard: Word; // 0xF0 — entrada
-    readonly display: Word; // 0xF1 — saída
-    readonly led: Word; // 0xF2 — LED/status
-  };
+  readonly io: IoDevices;
   readonly disk: readonly Word[]; // programa salvo, copiado para a RAM no boot/reset
+  readonly aluOutput: Word; // saída da ULA, mantida entre o cálculo e a escrita em rd
   readonly cycle: number; // ciclos de clock acumulados
-  readonly phase: Phase;
+  readonly phase: Phase; // fase da PRÓXIMA microetapa
+  readonly microIndex: number; // posição da próxima microetapa dentro da fase
   readonly halted: boolean;
   readonly error?: string; // ex.: "instrução inválida" (exceção didática, não crash)
 };

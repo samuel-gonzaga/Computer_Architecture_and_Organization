@@ -62,10 +62,49 @@ Resumo da especificação já definida no `CLAUDE.md` §4:
 - **Lacunas** deixadas por `.org` são preenchidas com `0x0000`, que é a instrução `NOP`.
 - A **listagem** associa cada linha do fonte ao endereço e ao código de máquina gerado; a UI (Fase 5) usará `extractFields` para colorir os campos.
 
+### D9 — UC como sequenciador de microetapas (Fase 2, `controlUnit.ts`)
+- O estado guarda `phase` e `microIndex`, que funcionam como o "contador de microetapa" da UC: indicam qual é a **próxima** microetapa. Cada fase tem um plano (uma lista de micro-operações) e, ao terminá-lo, a UC passa para a fase seguinte: `BOOT → FETCH → DECODE → EXECUTE → FETCH → …`. É uma versão simplificada de uma UC microprogramada.
+- O plano de **FETCH** tem 4 microetapas e é **idêntico para toda instrução** (verificado em teste com as 14 instruções), porque a UC ainda não sabe qual instrução está buscando.
+- O plano de **EXECUTE** é escolhido a partir do IR: depende da instrução, do endereço (RAM ou E/S) e, em `JZ`/`JN`, da flag testada. Ele é sempre calculado a partir de dados que não mudam durante a própria instrução, por isso é estável microetapa a microetapa.
+- Quantidade de microetapas de execução: `NOP`, `LDI`, `MOV`, `JMP` e `HLT` têm 1; as operações da ULA têm 3 (entradas → cálculo e flags → escrita em rd); `LOAD` tem 4 (RAM) ou 5 (E/S); `STORE` tem 2 (RAM) ou 3 (E/S); `JZ`/`JN` têm 1 (desvio não tomado) ou 2 (desvio tomado).
+- `NOP` ganhou uma microetapa explícita, para que o aluno veja que ela também passa pela execução.
+- A saída da ULA fica guardada em `aluOutput` entre o cálculo (que atualiza as flags) e a escrita em `rd`, como o registrador de saída da ULA em uma CPU real.
+
+### D10 — Ciclos de clock (Fase 2, `machine.ts`)
+- Cada microetapa da CPU dura **1 ciclo**. Os acessos à RAM (leitura na busca, leitura em `LOAD`, escrita em `STORE`) somam **4 ciclos de espera** (wait states, §4.5), visíveis no campo `waitCycles`.
+- O **BOOT não consome ciclos**: o carregamento do disco acontece antes de a CPU começar a executar (§4.5: "apenas no carregamento"). Avançar uma máquina parada também não consome ciclos.
+- Resultado sem cache: uma busca custa 8 ciclos (1 + 5 + 1 + 1), e o exemplo 1 termina em **65 ciclos**. A Fase 3 vai reduzir esse número com acertos na cache.
+
+### D11 — Barramentos e sinais de controle nas microetapas (Fase 2)
+- `buses.address` e `buses.data` representam apenas o **barramento do sistema** (CPU ↔ memória/E/S). As transferências internas da CPU (ex.: `R0 → MDR`, `MDR → IR`, entrada da ULA) não preenchem esses campos.
+- `CLOCK` aparece em toda microetapa executada pela CPU, porque cada uma ocorre em um pulso de clock. `RESET` aparece no BOOT, e `HALT` em `HLT` e nas exceções.
+- `ALU_OP` indica que a UC selecionou uma operação da ULA; qual operação foi selecionada aparece na explicação (ex.: "ALU_OP = ADD").
+- O campo `changes` é calculado pela máquina **comparando o estado antes e depois** da microetapa (registradores, flags, memória, display e LED). Assim, a lista de alterações nunca diverge do que de fato mudou. As flags aparecem como `FLAGS.Z`, `FLAGS.N` etc., com valores 0/1.
+
+### D12 — E/S mapeada em memória (Fase 2, `io.ts`)
+- Todo acesso a `0xF0`–`0xFF` é desviado para os dispositivos. As posições correspondentes do vetor da RAM nunca são lidas nem escritas.
+- Conforme a §4.6, o acesso à E/S tem uma **microetapa extra**, em que o dispositivo responde no barramento: em `LOAD`, o dispositivo coloca o valor no barramento de dados antes de o MDR armazená-lo; em `STORE`, o dispositivo captura o valor do barramento.
+- **Teclado** (`0xF0`) é só entrada: a escrita é ignorada (e explicada). **Display** (`0xF1`) e **LED** (`0xF2`) são saídas, mas a leitura devolve o valor exibido. **Endereços sem dispositivo** (`0xF3`–`0xFF`) leem 0 e ignoram a escrita.
+- A entrada do teclado pode ser alterada a qualquer momento (`setKeyboardInput`) e é mantida em `reset` e `load`, já que pertence ao usuário e não ao programa.
+
+### D13 — Exceções didáticas (Fase 2)
+- **Opcode reservado** (`0xD`, `0xE`): detectado na DECODIFICAÇÃO. A microetapa "Exceção: instrução inválida" ativa `HALT`, e a máquina para com `error` preenchido.
+- **PC na região de E/S**: se o PC chegar a `0xF0`–`0xFF` (por um `JMP` ou por um programa sem `HLT`), a BUSCA gera "Exceção: busca fora da área de programa" e a máquina para. Isso mantém a busca idêntica para toda instrução válida e reforça que ali não há memória de programa.
+- Nenhum dos casos lança exceção JavaScript: o simulador continua funcionando e explica o que aconteceu.
+- `run()` executa no máximo 10.000 microetapas por padrão, para que um laço infinito (ex.: `loop: JMP loop`) não trave a interface.
+
+### D4 (revisão na Fase 2)
+- `MachineState` recebeu `aluOutput` (D9) e `microIndex` (D9). `phase` passou a indicar a fase da **próxima** microetapa (ou `HALT`).
+
 ## 3. Simplificações declaradas
 
 - **Endereçamento por palavra:** cada endereço contém uma palavra de 16 bits; não há acesso a bytes individuais.
 - **Imediato de 8 bits sem sinal** em `LDI` (ver D8); constantes maiores ou negativas ficam na memória.
 - **Sem pilha, sub-rotinas ou modos de endereçamento indireto/indexado:** os endereços de `LOAD`/`STORE`/saltos são sempre absolutos e fixos na instrução.
 
-> Simplificações da UC, da cache e da latência da RAM serão acrescentadas nas fases 2 e 3.
+- **Latência fixa da RAM:** todo acesso custa os mesmos 4 ciclos de espera, sem rajadas, refresh ou variação por endereço.
+- **Dispositivos de E/S instantâneos:** respondem sem ciclos de espera e sem protocolo de handshake ou status de "pronto"; não há interrupções nem DMA (§2, regra 6).
+- **Loader em uma única microetapa:** a cópia disco → RAM é mostrada como uma única etapa, e não palavra a palavra.
+- **Sequenciamento estritamente sequencial:** uma microetapa por vez, sem paralelismo entre busca e execução (sem pipeline, §4.1).
+
+> As simplificações da cache serão acrescentadas na Fase 3.

@@ -1,0 +1,1002 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de microetapas (golden) 1`] = `
+[
+  {
+    "activeComponents": [
+      "DISK",
+      "RAM",
+    ],
+    "buses": {
+      "control": [
+        "RESET",
+      ],
+    },
+    "changes": [
+      {
+        "from": 0,
+        "target": "M[0x00]",
+        "to": 4336,
+      },
+      {
+        "from": 0,
+        "target": "M[0x01]",
+        "to": 5152,
+      },
+      {
+        "from": 0,
+        "target": "M[0x02]",
+        "to": 20736,
+      },
+      {
+        "from": 0,
+        "target": "M[0x03]",
+        "to": 8433,
+      },
+      {
+        "from": 0,
+        "target": "M[0x04]",
+        "to": 61440,
+      },
+      {
+        "from": 0,
+        "target": "M[0x20]",
+        "to": 7,
+      },
+    ],
+    "cycle": 0,
+    "explanation": "O loader copia o programa (33 palavras) do disco para a RAM, a partir do endereço 0x00. Em seguida, a CPU começa a buscar a primeira instrução no endereço indicado pelo PC (0x00).",
+    "phase": "BOOT",
+    "title": "Loader: disco → RAM",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "PC",
+      "MAR",
+    ],
+    "buses": {
+      "address": 0,
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [],
+    "cycle": 1,
+    "explanation": "A UC copia o PC (0x00) para o MAR, que coloca o endereço da próxima instrução no barramento de endereços.",
+    "phase": "FETCH",
+    "title": "MAR ← PC",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MAR",
+      "RAM",
+    ],
+    "buses": {
+      "address": 0,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+    },
+    "changes": [],
+    "cycle": 6,
+    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x00. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "phase": "FETCH",
+    "title": "MEM_READ: leitura da RAM",
+    "waitCycles": 4,
+  },
+  {
+    "activeComponents": [
+      "RAM",
+      "MDR",
+    ],
+    "buses": {
+      "address": 0,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+      "data": 4336,
+    },
+    "changes": [
+      {
+        "from": 0,
+        "target": "MDR",
+        "to": 4336,
+      },
+    ],
+    "cycle": 7,
+    "explanation": "A RAM coloca a palavra 0x10F0 no barramento de dados e o MDR a armazena.",
+    "phase": "FETCH",
+    "title": "MDR ← M[MAR]",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MDR",
+      "IR",
+      "PC",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "IR_LOAD",
+        "PC_INC",
+      ],
+    },
+    "changes": [
+      {
+        "from": 0,
+        "target": "PC",
+        "to": 1,
+      },
+      {
+        "from": 0,
+        "target": "IR",
+        "to": 4336,
+      },
+    ],
+    "cycle": 8,
+    "explanation": "A instrução vai do MDR para o IR (IR_LOAD) e o PC avança para 0x01 (PC_INC), já apontando para a próxima instrução.",
+    "phase": "FETCH",
+    "title": "IR ← MDR; PC ← PC + 1",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "IR",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [],
+    "cycle": 9,
+    "explanation": "A UC separa os campos do IR (0x10F0): opcode 0x1 = LOAD, rd = R0, addr = 0xF0. Operação: rd ← M[addr].",
+    "instruction": "LOAD R0, [0xF0]",
+    "phase": "DECODE",
+    "title": "Decodifica IR: LOAD R0, [0xF0]",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "IR",
+      "MAR",
+    ],
+    "buses": {
+      "address": 240,
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [
+      {
+        "from": 0,
+        "target": "MAR",
+        "to": 240,
+      },
+    ],
+    "cycle": 10,
+    "explanation": "A UC copia o endereço 0xF0 do campo addr do IR para o MAR, que o coloca no barramento de endereços.",
+    "instruction": "LOAD R0, [0xF0]",
+    "phase": "EXECUTE",
+    "title": "MAR ← addr",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MAR",
+      "KEYBOARD",
+    ],
+    "buses": {
+      "address": 240,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+    },
+    "changes": [],
+    "cycle": 11,
+    "explanation": "A UC ativa MEM_READ. O endereço 0xF0 pertence à região de E/S: a RAM não responde e o pedido vai para o teclado.",
+    "instruction": "LOAD R0, [0xF0]",
+    "phase": "EXECUTE",
+    "title": "MEM_READ: endereço de E/S",
+  },
+  {
+    "activeComponents": [
+      "KEYBOARD",
+    ],
+    "buses": {
+      "address": 240,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+      "data": 5,
+    },
+    "changes": [],
+    "cycle": 12,
+    "explanation": "O teclado coloca o valor digitado (5) no barramento de dados.",
+    "instruction": "LOAD R0, [0xF0]",
+    "phase": "EXECUTE",
+    "title": "Teclado responde",
+  },
+  {
+    "activeComponents": [
+      "KEYBOARD",
+      "MDR",
+    ],
+    "buses": {
+      "address": 240,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+      "data": 5,
+    },
+    "changes": [
+      {
+        "from": 4336,
+        "target": "MDR",
+        "to": 5,
+      },
+    ],
+    "cycle": 13,
+    "explanation": "O MDR armazena o valor 5 recebido pelo barramento de dados.",
+    "instruction": "LOAD R0, [0xF0]",
+    "phase": "EXECUTE",
+    "title": "MDR ← E/S[MAR]",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MDR",
+      "R0",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "REG_WRITE",
+      ],
+    },
+    "changes": [
+      {
+        "from": 0,
+        "target": "R0",
+        "to": 5,
+      },
+    ],
+    "cycle": 14,
+    "explanation": "O valor 5 do MDR é gravado em R0 (REG_WRITE).",
+    "instruction": "LOAD R0, [0xF0]",
+    "phase": "EXECUTE",
+    "title": "R0 ← MDR",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "PC",
+      "MAR",
+    ],
+    "buses": {
+      "address": 1,
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [
+      {
+        "from": 240,
+        "target": "MAR",
+        "to": 1,
+      },
+    ],
+    "cycle": 15,
+    "explanation": "A UC copia o PC (0x01) para o MAR, que coloca o endereço da próxima instrução no barramento de endereços.",
+    "phase": "FETCH",
+    "title": "MAR ← PC",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MAR",
+      "RAM",
+    ],
+    "buses": {
+      "address": 1,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+    },
+    "changes": [],
+    "cycle": 20,
+    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x01. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "phase": "FETCH",
+    "title": "MEM_READ: leitura da RAM",
+    "waitCycles": 4,
+  },
+  {
+    "activeComponents": [
+      "RAM",
+      "MDR",
+    ],
+    "buses": {
+      "address": 1,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+      "data": 5152,
+    },
+    "changes": [
+      {
+        "from": 5,
+        "target": "MDR",
+        "to": 5152,
+      },
+    ],
+    "cycle": 21,
+    "explanation": "A RAM coloca a palavra 0x1420 no barramento de dados e o MDR a armazena.",
+    "phase": "FETCH",
+    "title": "MDR ← M[MAR]",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MDR",
+      "IR",
+      "PC",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "IR_LOAD",
+        "PC_INC",
+      ],
+    },
+    "changes": [
+      {
+        "from": 1,
+        "target": "PC",
+        "to": 2,
+      },
+      {
+        "from": 4336,
+        "target": "IR",
+        "to": 5152,
+      },
+    ],
+    "cycle": 22,
+    "explanation": "A instrução vai do MDR para o IR (IR_LOAD) e o PC avança para 0x02 (PC_INC), já apontando para a próxima instrução.",
+    "phase": "FETCH",
+    "title": "IR ← MDR; PC ← PC + 1",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "IR",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [],
+    "cycle": 23,
+    "explanation": "A UC separa os campos do IR (0x1420): opcode 0x1 = LOAD, rd = R1, addr = 0x20. Operação: rd ← M[addr].",
+    "instruction": "LOAD R1, [0x20]",
+    "phase": "DECODE",
+    "title": "Decodifica IR: LOAD R1, [0x20]",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "IR",
+      "MAR",
+    ],
+    "buses": {
+      "address": 32,
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [
+      {
+        "from": 1,
+        "target": "MAR",
+        "to": 32,
+      },
+    ],
+    "cycle": 24,
+    "explanation": "A UC copia o endereço 0x20 do campo addr do IR para o MAR, que o coloca no barramento de endereços.",
+    "instruction": "LOAD R1, [0x20]",
+    "phase": "EXECUTE",
+    "title": "MAR ← addr",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MAR",
+      "RAM",
+    ],
+    "buses": {
+      "address": 32,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+    },
+    "changes": [],
+    "cycle": 29,
+    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x20. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "instruction": "LOAD R1, [0x20]",
+    "phase": "EXECUTE",
+    "title": "MEM_READ: leitura da RAM",
+    "waitCycles": 4,
+  },
+  {
+    "activeComponents": [
+      "RAM",
+      "MDR",
+    ],
+    "buses": {
+      "address": 32,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+      "data": 7,
+    },
+    "changes": [
+      {
+        "from": 5152,
+        "target": "MDR",
+        "to": 7,
+      },
+    ],
+    "cycle": 30,
+    "explanation": "A RAM coloca a palavra 0x0007 no barramento de dados e o MDR a armazena.",
+    "instruction": "LOAD R1, [0x20]",
+    "phase": "EXECUTE",
+    "title": "MDR ← M[MAR]",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MDR",
+      "R1",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "REG_WRITE",
+      ],
+    },
+    "changes": [
+      {
+        "from": 0,
+        "target": "R1",
+        "to": 7,
+      },
+    ],
+    "cycle": 31,
+    "explanation": "O valor 7 do MDR é gravado em R1 (REG_WRITE).",
+    "instruction": "LOAD R1, [0x20]",
+    "phase": "EXECUTE",
+    "title": "R1 ← MDR",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "PC",
+      "MAR",
+    ],
+    "buses": {
+      "address": 2,
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [
+      {
+        "from": 32,
+        "target": "MAR",
+        "to": 2,
+      },
+    ],
+    "cycle": 32,
+    "explanation": "A UC copia o PC (0x02) para o MAR, que coloca o endereço da próxima instrução no barramento de endereços.",
+    "phase": "FETCH",
+    "title": "MAR ← PC",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MAR",
+      "RAM",
+    ],
+    "buses": {
+      "address": 2,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+    },
+    "changes": [],
+    "cycle": 37,
+    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x02. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "phase": "FETCH",
+    "title": "MEM_READ: leitura da RAM",
+    "waitCycles": 4,
+  },
+  {
+    "activeComponents": [
+      "RAM",
+      "MDR",
+    ],
+    "buses": {
+      "address": 2,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+      "data": 20736,
+    },
+    "changes": [
+      {
+        "from": 7,
+        "target": "MDR",
+        "to": 20736,
+      },
+    ],
+    "cycle": 38,
+    "explanation": "A RAM coloca a palavra 0x5100 no barramento de dados e o MDR a armazena.",
+    "phase": "FETCH",
+    "title": "MDR ← M[MAR]",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MDR",
+      "IR",
+      "PC",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "IR_LOAD",
+        "PC_INC",
+      ],
+    },
+    "changes": [
+      {
+        "from": 2,
+        "target": "PC",
+        "to": 3,
+      },
+      {
+        "from": 5152,
+        "target": "IR",
+        "to": 20736,
+      },
+    ],
+    "cycle": 39,
+    "explanation": "A instrução vai do MDR para o IR (IR_LOAD) e o PC avança para 0x03 (PC_INC), já apontando para a próxima instrução.",
+    "phase": "FETCH",
+    "title": "IR ← MDR; PC ← PC + 1",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "IR",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [],
+    "cycle": 40,
+    "explanation": "A UC separa os campos do IR (0x5100): opcode 0x5 = ADD, rd = R0, rs = R1. Operação: rd ← rd + rs.",
+    "instruction": "ADD R0, R1",
+    "phase": "DECODE",
+    "title": "Decodifica IR: ADD R0, R1",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "R0",
+      "R1",
+      "ALU",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "ALU_OP",
+      ],
+    },
+    "changes": [],
+    "cycle": 41,
+    "explanation": "A UC envia R0 (5) e R1 (7) para as entradas da ULA e seleciona a operação (ALU_OP = ADD).",
+    "instruction": "ADD R0, R1",
+    "phase": "EXECUTE",
+    "title": "ULA ← R0, R1",
+  },
+  {
+    "activeComponents": [
+      "ALU",
+      "FLAGS",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "ALU_OP",
+      ],
+    },
+    "changes": [],
+    "cycle": 42,
+    "explanation": "A ULA calcula 5 + 7 = 12 e atualiza as flags Z=0, N=0, C=0, V=0.",
+    "instruction": "ADD R0, R1",
+    "phase": "EXECUTE",
+    "title": "ULA calcula resultado e flags",
+  },
+  {
+    "activeComponents": [
+      "ALU",
+      "R0",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "REG_WRITE",
+      ],
+    },
+    "changes": [
+      {
+        "from": 5,
+        "target": "R0",
+        "to": 12,
+      },
+    ],
+    "cycle": 43,
+    "explanation": "O resultado (12) sai da ULA e é gravado em R0 (REG_WRITE).",
+    "instruction": "ADD R0, R1",
+    "phase": "EXECUTE",
+    "title": "R0 ← resultado",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "PC",
+      "MAR",
+    ],
+    "buses": {
+      "address": 3,
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [
+      {
+        "from": 2,
+        "target": "MAR",
+        "to": 3,
+      },
+    ],
+    "cycle": 44,
+    "explanation": "A UC copia o PC (0x03) para o MAR, que coloca o endereço da próxima instrução no barramento de endereços.",
+    "phase": "FETCH",
+    "title": "MAR ← PC",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MAR",
+      "RAM",
+    ],
+    "buses": {
+      "address": 3,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+    },
+    "changes": [],
+    "cycle": 49,
+    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x03. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "phase": "FETCH",
+    "title": "MEM_READ: leitura da RAM",
+    "waitCycles": 4,
+  },
+  {
+    "activeComponents": [
+      "RAM",
+      "MDR",
+    ],
+    "buses": {
+      "address": 3,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+      "data": 8433,
+    },
+    "changes": [
+      {
+        "from": 20736,
+        "target": "MDR",
+        "to": 8433,
+      },
+    ],
+    "cycle": 50,
+    "explanation": "A RAM coloca a palavra 0x20F1 no barramento de dados e o MDR a armazena.",
+    "phase": "FETCH",
+    "title": "MDR ← M[MAR]",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MDR",
+      "IR",
+      "PC",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "IR_LOAD",
+        "PC_INC",
+      ],
+    },
+    "changes": [
+      {
+        "from": 3,
+        "target": "PC",
+        "to": 4,
+      },
+      {
+        "from": 20736,
+        "target": "IR",
+        "to": 8433,
+      },
+    ],
+    "cycle": 51,
+    "explanation": "A instrução vai do MDR para o IR (IR_LOAD) e o PC avança para 0x04 (PC_INC), já apontando para a próxima instrução.",
+    "phase": "FETCH",
+    "title": "IR ← MDR; PC ← PC + 1",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "IR",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [],
+    "cycle": 52,
+    "explanation": "A UC separa os campos do IR (0x20F1): opcode 0x2 = STORE, rd = R0, addr = 0xF1. Operação: M[addr] ← rd.",
+    "instruction": "STORE R0, [0xF1]",
+    "phase": "DECODE",
+    "title": "Decodifica IR: STORE R0, [0xF1]",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "IR",
+      "MAR",
+      "R0",
+      "MDR",
+    ],
+    "buses": {
+      "address": 241,
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [
+      {
+        "from": 3,
+        "target": "MAR",
+        "to": 241,
+      },
+      {
+        "from": 8433,
+        "target": "MDR",
+        "to": 12,
+      },
+    ],
+    "cycle": 53,
+    "explanation": "A UC coloca o endereço 0xF1 no MAR e copia R0 (12) para o MDR, preparando a escrita.",
+    "instruction": "STORE R0, [0xF1]",
+    "phase": "EXECUTE",
+    "title": "MAR ← addr; MDR ← R0",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MAR",
+      "MDR",
+      "DISPLAY",
+    ],
+    "buses": {
+      "address": 241,
+      "control": [
+        "CLOCK",
+        "MEM_WRITE",
+      ],
+      "data": 12,
+    },
+    "changes": [],
+    "cycle": 54,
+    "explanation": "A UC ativa MEM_WRITE e o MDR coloca 12 no barramento de dados. O endereço 0xF1 é de E/S: a RAM ignora a escrita e o pedido vai para o display.",
+    "instruction": "STORE R0, [0xF1]",
+    "phase": "EXECUTE",
+    "title": "MEM_WRITE: endereço de E/S",
+  },
+  {
+    "activeComponents": [
+      "DISPLAY",
+    ],
+    "buses": {
+      "address": 241,
+      "control": [
+        "CLOCK",
+        "MEM_WRITE",
+      ],
+      "data": 12,
+    },
+    "changes": [
+      {
+        "from": 0,
+        "target": "DISPLAY",
+        "to": 12,
+      },
+    ],
+    "cycle": 55,
+    "explanation": "O display captura o valor do barramento de dados e passa a mostrar 12.",
+    "instruction": "STORE R0, [0xF1]",
+    "phase": "EXECUTE",
+    "title": "Display responde",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "PC",
+      "MAR",
+    ],
+    "buses": {
+      "address": 4,
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [
+      {
+        "from": 241,
+        "target": "MAR",
+        "to": 4,
+      },
+    ],
+    "cycle": 56,
+    "explanation": "A UC copia o PC (0x04) para o MAR, que coloca o endereço da próxima instrução no barramento de endereços.",
+    "phase": "FETCH",
+    "title": "MAR ← PC",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MAR",
+      "RAM",
+    ],
+    "buses": {
+      "address": 4,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+    },
+    "changes": [],
+    "cycle": 61,
+    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x04. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "phase": "FETCH",
+    "title": "MEM_READ: leitura da RAM",
+    "waitCycles": 4,
+  },
+  {
+    "activeComponents": [
+      "RAM",
+      "MDR",
+    ],
+    "buses": {
+      "address": 4,
+      "control": [
+        "CLOCK",
+        "MEM_READ",
+      ],
+      "data": 61440,
+    },
+    "changes": [
+      {
+        "from": 12,
+        "target": "MDR",
+        "to": 61440,
+      },
+    ],
+    "cycle": 62,
+    "explanation": "A RAM coloca a palavra 0xF000 no barramento de dados e o MDR a armazena.",
+    "phase": "FETCH",
+    "title": "MDR ← M[MAR]",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "MDR",
+      "IR",
+      "PC",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "IR_LOAD",
+        "PC_INC",
+      ],
+    },
+    "changes": [
+      {
+        "from": 4,
+        "target": "PC",
+        "to": 5,
+      },
+      {
+        "from": 8433,
+        "target": "IR",
+        "to": 61440,
+      },
+    ],
+    "cycle": 63,
+    "explanation": "A instrução vai do MDR para o IR (IR_LOAD) e o PC avança para 0x05 (PC_INC), já apontando para a próxima instrução.",
+    "phase": "FETCH",
+    "title": "IR ← MDR; PC ← PC + 1",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+      "IR",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+      ],
+    },
+    "changes": [],
+    "cycle": 64,
+    "explanation": "A UC separa os campos do IR (0xF000): opcode 0xF = HLT. Operação: para a execução.",
+    "instruction": "HLT",
+    "phase": "DECODE",
+    "title": "Decodifica IR: HLT",
+  },
+  {
+    "activeComponents": [
+      "CONTROL_UNIT",
+    ],
+    "buses": {
+      "control": [
+        "CLOCK",
+        "HALT",
+      ],
+    },
+    "changes": [],
+    "cycle": 65,
+    "explanation": "A UC ativa o sinal HALT e o clock para. O programa terminou; use Reset para executar de novo.",
+    "instruction": "HLT",
+    "phase": "EXECUTE",
+    "title": "HLT: fim da execução",
+  },
+]
+`;

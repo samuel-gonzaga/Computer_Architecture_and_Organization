@@ -4,7 +4,7 @@ Simulador web didático da arquitetura interna de um computador. Ele mostra, mic
 
 Trabalho final da disciplina **Computer Architecture and Organization** (UniFECAF), como prova de conceito para a empresa fictícia NeoCore Tech.
 
-> **Status:** Fase 1 (núcleo da ISA: instruções, ULA, memória e montador) concluída. O simulador ainda está em construção.
+> **Status:** Fase 2 (Unidade de Controle, máquina, E/S e programas de exemplo) concluída. O simulador ainda está em construção.
 
 ## Links
 

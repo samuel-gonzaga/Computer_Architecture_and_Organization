@@ -6,6 +6,9 @@ import type { Address, Word } from "./types";
 
 export const MEMORY_SIZE = 256;
 
+/** Ciclos de espera (wait states) de cada acesso à RAM (§4.5). */
+export const RAM_WAIT_CYCLES = 4;
+
 /** Primeiro endereço da região de E/S. Programas ocupam apenas 0x00–0xEF. */
 export const IO_REGION_START = 0xf0;
 
