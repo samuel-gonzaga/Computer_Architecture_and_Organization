@@ -10,6 +10,7 @@
 // instrução no IR, do endereço acessado (RAM ou E/S) e, nos desvios, das flags.
 
 import { aluExecute, toSigned16 } from "./alu";
+import { fill, lookup, recordHit, recordMiss, splitAddress, writeThrough } from "./cache";
 import { deviceAt, readIo, writeIo } from "./io";
 import { decode, formatInstruction, specForMnemonic, toHex } from "./isa";
 import { createMemory, IO_REGION_START, isIoAddress, RAM_WAIT_CYCLES, readWord, writeWord } from "./memory";
@@ -122,28 +123,68 @@ const marFromPc: MicroOp = (state) => ({
   },
 });
 
-const memoryReadRequest: MicroOp = (state) => ({
-  state,
-  micro: {
-    title: "MEM_READ: leitura da RAM",
-    explanation:
-      `A UC ativa MEM_READ e a RAM localiza o endereço ${toHex(state.mar, 2)}. ` +
-      `Como a RAM é mais lenta que a CPU, a CPU aguarda ${RAM_WAIT_CYCLES} ciclos de espera (wait states).`,
-    activeComponents: ["CONTROL_UNIT", "MAR", "RAM"],
+/** Leitura da memória, etapa 1: consulta à cache. HIT custa 1 ciclo; MISS soma os wait states da RAM. */
+const cacheLookup: MicroOp = (state) => {
+  const { hit, tag, index, line } = lookup(state.cache, state.mar);
+  const location =
+    `A UC ativa MEM_READ e consulta a cache: o endereço ${toHex(state.mar, 2)} ` +
+    `tem tag ${toHex(tag, 2)} e índice ${index}.`;
+  const common = {
+    title: "MEM_READ: consulta à cache",
     buses: { address: state.mar, control: ["CLOCK", "MEM_READ"] },
-    waitCycles: RAM_WAIT_CYCLES,
-  },
-});
+    cache: { type: hit ? "HIT" : "MISS", index, tag },
+  } satisfies Partial<MicroDraft>;
 
+  if (hit) {
+    return {
+      state: { ...state, cache: recordHit(state.cache, index) },
+      micro: {
+        ...common,
+        explanation: `${location} A linha ${index} é válida e guarda essa tag: HIT! A cache entrega o dado em 1 ciclo, sem esperar a RAM.`,
+        activeComponents: ["CONTROL_UNIT", "MAR", "CACHE"],
+      },
+    };
+  }
+  const reason = line.valid ? `guarda a tag ${toHex(line.tag, 2)}, de outro endereço` : "está vazia (bit de validade = 0)";
+  return {
+    state: { ...state, cache: recordMiss(state.cache) },
+    micro: {
+      ...common,
+      explanation:
+        `${location} A linha ${index} ${reason}: MISS. ` +
+        `O dado precisa vir da RAM, e a CPU aguarda ${RAM_WAIT_CYCLES} ciclos de espera (wait states).`,
+      activeComponents: ["CONTROL_UNIT", "MAR", "CACHE", "RAM"],
+      waitCycles: RAM_WAIT_CYCLES,
+    },
+  };
+};
+
+/** Leitura da memória, etapa 2: a palavra chega ao MDR, vinda da cache (HIT) ou da RAM (MISS). */
 const mdrFromMemory: MicroOp = (state) => {
+  const { hit, tag, index, line } = lookup(state.cache, state.mar);
+  const buses = (data: number) => ({ address: state.mar, data, control: ["CLOCK", "MEM_READ"] }) satisfies MicroDraft["buses"];
+
+  if (hit) {
+    return {
+      state: { ...state, mdr: line.data },
+      micro: {
+        title: "MDR ← M[MAR]",
+        explanation: `A cache coloca a palavra ${toHex(line.data, 4)} no barramento de dados e o MDR a armazena.`,
+        activeComponents: ["CACHE", "MDR"],
+        buses: buses(line.data),
+      },
+    };
+  }
   const word = readWord(state.memory, state.mar);
   return {
-    state: { ...state, mdr: word },
+    state: { ...state, mdr: word, cache: fill(state.cache, state.mar, word) },
     micro: {
       title: "MDR ← M[MAR]",
-      explanation: `A RAM coloca a palavra ${toHex(word, 4)} no barramento de dados e o MDR a armazena.`,
-      activeComponents: ["RAM", "MDR"],
-      buses: { address: state.mar, data: word, control: ["CLOCK", "MEM_READ"] },
+      explanation:
+        `A RAM coloca a palavra ${toHex(word, 4)} no barramento de dados. ` +
+        `A cache guarda uma cópia na linha ${index} (tag ${toHex(tag, 2)}) e o MDR armazena a palavra.`,
+      activeComponents: ["RAM", "CACHE", "MDR"],
+      buses: buses(word),
     },
   };
 };
@@ -161,7 +202,7 @@ const irFromMdr: MicroOp = (state) => {
   };
 };
 
-const FETCH_PLAN: MicroOp[] = [marFromPc, memoryReadRequest, mdrFromMemory, irFromMdr];
+const FETCH_PLAN: MicroOp[] = [marFromPc, cacheLookup, mdrFromMemory, irFromMdr];
 
 const fetchOutsideProgram: MicroOp = (state) =>
   exception(
@@ -224,7 +265,7 @@ function executePlan(state: MachineState): MicroOp[] {
     case "LOAD":
       return isIoAddress(instruction.operand)
         ? [marFromIr, ioReadRequest, ioReadResponse, mdrFromIo, registerFromMdr]
-        : [marFromIr, memoryReadRequest, mdrFromMemory, registerFromMdr];
+        : [marFromIr, cacheLookup, mdrFromMemory, registerFromMdr];
     case "STORE":
       return isIoAddress(instruction.operand)
         ? [prepareStore, ioWriteRequest, ioWriteResponse]
@@ -323,20 +364,34 @@ const prepareStore: MicroOp = (state) => {
   };
 };
 
-const memoryWrite: MicroOp = (state) => ({
-  state: { ...state, memory: writeWord(state.memory, state.mar, state.mdr) },
-  micro: {
-    title: "MEM_WRITE: M[MAR] ← MDR",
-    explanation:
-      `A UC ativa MEM_WRITE: o MDR coloca ${state.mdr} no barramento de dados e a RAM grava o valor em ${toHex(state.mar, 2)}. ` +
-      `A escrita na RAM também custa ${RAM_WAIT_CYCLES} ciclos de espera.`,
-    activeComponents: ["CONTROL_UNIT", "MAR", "MDR", "RAM"],
-    buses: { address: state.mar, data: state.mdr, control: ["CLOCK", "MEM_WRITE"] },
-    waitCycles: RAM_WAIT_CYCLES,
-  },
-});
+/** Escrita write-through: a RAM é sempre escrita; a cache só é atualizada se já tiver o endereço. */
+const memoryWrite: MicroOp = (state) => {
+  const { tag, index } = splitAddress(state.mar);
+  const { cache, updated } = writeThrough(state.cache, state.mar, state.mdr);
+  const cachePolicy = updated
+    ? `A linha ${index} da cache guarda esse endereço e também é atualizada (write-through), mantendo cache e RAM iguais.`
+    : "O endereço não está na cache, que não é alterada (no-write-allocate).";
+  return {
+    state: { ...state, memory: writeWord(state.memory, state.mar, state.mdr), cache },
+    micro: {
+      title: "MEM_WRITE: M[MAR] ← MDR",
+      explanation:
+        `A UC ativa MEM_WRITE: o MDR coloca ${state.mdr} no barramento de dados e a RAM grava o valor em ${toHex(state.mar, 2)}, ` +
+        `o que custa ${RAM_WAIT_CYCLES} ciclos de espera. ${cachePolicy}`,
+      activeComponents: ["CONTROL_UNIT", "MAR", "MDR", "CACHE", "RAM"],
+      buses: { address: state.mar, data: state.mdr, control: ["CLOCK", "MEM_WRITE"] },
+      cache: { type: "WRITE", index, tag },
+      waitCycles: RAM_WAIT_CYCLES,
+    },
+  };
+};
 
 // --- E/S mapeada em memória: microetapa extra com o dispositivo respondendo --
+
+/** A região de E/S não é cacheável: o acesso passa direto (BYPASS). */
+function cacheBypass(state: MachineState) {
+  return { type: "BYPASS", ...splitAddress(state.mar) } satisfies MicroDraft["cache"];
+}
 
 function deviceComponents(state: MachineState): ComponentId[] {
   const device = deviceAt(state.mar);
@@ -355,9 +410,10 @@ const ioReadRequest: MicroOp = (state) => ({
     title: "MEM_READ: endereço de E/S",
     explanation:
       `A UC ativa MEM_READ. O endereço ${toHex(state.mar, 2)} pertence à região de E/S: ` +
-      `a RAM não responde e ${ioDestination(state)}.`,
+      `a cache é ignorada (BYPASS), a RAM não responde e ${ioDestination(state)}.`,
     activeComponents: ["CONTROL_UNIT", "MAR", ...deviceComponents(state)],
     buses: { address: state.mar, control: ["CLOCK", "MEM_READ"] },
+    cache: cacheBypass(state),
   },
 });
 
@@ -400,9 +456,10 @@ const ioWriteRequest: MicroOp = (state) => ({
     title: "MEM_WRITE: endereço de E/S",
     explanation:
       `A UC ativa MEM_WRITE e o MDR coloca ${state.mdr} no barramento de dados. ` +
-      `O endereço ${toHex(state.mar, 2)} é de E/S: a RAM ignora a escrita e ${ioDestination(state)}.`,
+      `O endereço ${toHex(state.mar, 2)} é de E/S: a cache é ignorada (BYPASS), a RAM ignora a escrita e ${ioDestination(state)}.`,
     activeComponents: ["CONTROL_UNIT", "MAR", "MDR", ...deviceComponents(state)],
     buses: { address: state.mar, data: state.mdr, control: ["CLOCK", "MEM_WRITE"] },
+    cache: cacheBypass(state),
   },
 });
 

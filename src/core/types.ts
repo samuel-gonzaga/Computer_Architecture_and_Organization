@@ -107,6 +107,13 @@ export type CacheLine = {
   readonly lastEvent?: CacheEventType;
 };
 
+/** Cache L1 unificada: linhas e contadores de leitura (§4.5). */
+export type CacheState = {
+  readonly lines: readonly CacheLine[]; // 8 linhas
+  readonly hits: number;
+  readonly misses: number;
+};
+
 /** Contrato de uma microetapa (§5.2). A UI renderiza exatamente o que vem aqui. */
 export type MicroStep = {
   cycle: number; // ciclo de clock acumulado
@@ -141,11 +148,7 @@ export type MachineState = {
   readonly mdr: Word; // 16 bits
   readonly flags: Flags;
   readonly memory: readonly Word[]; // 256 palavras (RAM + região de E/S 0xF0–0xFF)
-  readonly cache: {
-    readonly lines: readonly CacheLine[]; // 8 linhas
-    readonly hits: number;
-    readonly misses: number;
-  };
+  readonly cache: CacheState;
   readonly io: IoDevices;
   readonly disk: readonly Word[]; // programa salvo, copiado para a RAM no boot/reset
   readonly aluOutput: Word; // saída da ULA, mantida entre o cálculo e a escrita em rd

@@ -35,3 +35,5 @@ Valores de Status: `pendente` · `em andamento` · `concluído`.
   - **R9 → em andamento:** fases BOOT → FETCH → DECODE → EXECUTE geradas por `controlUnit.ts`; a busca é idêntica para toda instrução; falta o indicador de fase.
   - **R10 → em andamento:** os 3 exemplos (`programs.ts`) rodam até `HLT` com o estado final esperado; o exemplo 1 com entrada 5 mostra 12 no display em 65 ciclos (snapshot golden em `tests/core/__snapshots__`).
   - **R11 → em andamento:** cada microetapa tem título e explicação em português gerados pelo motor; falta o painel "O que está acontecendo".
+- **Fase 3 (Cache):** `cache.ts` implementado e integrado à busca, ao `LOAD` e ao `STORE` (145 testes, cobertura de 100% em `src/core`).
+  - **R5 (em andamento):** a hierarquia registradores → cache L1 → RAM → disco está completa no motor. A cache tem mapeamento direto, write-through, no-write-allocate e bypass da E/S, com estatísticas de hits, misses, taxa de acerto e ciclos economizados. O laço do exemplo 2 atinge 23/34 ≈ 68% de acerto e roda em 258 ciclos, contra 350 sem cache. Falta a parte visual (painéis Cache e Stats, Fase 5).

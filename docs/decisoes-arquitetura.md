@@ -93,6 +93,23 @@ Resumo da especificação já definida no `CLAUDE.md` §4:
 - Nenhum dos casos lança exceção JavaScript: o simulador continua funcionando e explica o que aconteceu.
 - `run()` executa no máximo 10.000 microetapas por padrão, para que um laço infinito (ex.: `loop: JMP loop`) não trave a interface.
 
+### D14 — Cache L1 (Fase 3, `cache.ts`)
+- **Mapeamento direto, 8 linhas de 1 palavra.** O endereço de 8 bits se divide em **tag (5 bits) | índice (3 bits)**: o índice escolhe a linha, e a tag registra qual dos 32 endereços que caem nessa linha ela está guardando. Cada linha tem um bit de validade.
+- **Unificada:** instruções e dados disputam as mesmas linhas, coerente com Von Neumann. Isso cria conflitos visíveis: no exemplo 1, o dado em `0x20` (índice 0, tag `0x04`) expulsa a instrução de `0x00` (índice 0, tag `0x00`).
+- **Leitura** (busca e `LOAD`), em duas microetapas com os mesmos títulos em HIT e MISS:
+  1. "MEM_READ: consulta à cache". Em **HIT**, custa 1 ciclo e ativa só a cache. Em **MISS**, custa 1 + 4 ciclos de espera e ativa cache e RAM. A explicação diz por que foi MISS: linha vazia ou tag de outro endereço.
+  2. "MDR ← M[MAR]". Em HIT, a palavra vem da cache. Em MISS, vem da RAM, e a cache guarda uma cópia na linha, substituindo o que havia.
+- **Escrita** (`STORE` na RAM): **write-through** (a RAM é sempre escrita, sempre com os 4 ciclos de espera) e **no-write-allocate** (a cache só é atualizada se já tiver o endereço; caso contrário, não muda). O evento registrado é `WRITE`.
+- **E/S** (`0xF0`–`0xFF`): não é cacheável. O evento `BYPASS` aparece na microetapa de acesso à E/S, e a cache não é consultada nem alterada.
+- **Contadores:** `hits` e `misses` contam apenas **leituras** (busca e `LOAD`), porque são elas que a cache pode acelerar. Escritas e bypass não entram na taxa de acerto.
+- **Estatísticas** (`cacheStatistics`): taxa de acerto = hits ÷ (hits + misses). Cada HIT evita 4 ciclos de espera, então ciclos economizados = hits × 4, e ciclos sem cache = ciclos totais + economizados. O valor "sem cache" coincide com o que a Fase 2 media antes da cache: 350 ciclos no exemplo 2, que agora roda em 258 (taxa de acerto de 23/34 ≈ 68%).
+- **Reset** esvazia a cache: toda execução começa "fria", e os primeiros acessos são sempre MISS.
+- **Exemplo 2:** o dado `passo` foi colocado em `0x20` (índice 0), fora das linhas 1–5 usadas pelo laço. Se ele ficasse logo depois do `HLT` (`0x0A`, índice 2), disputaria a linha com a instrução `LOAD` do laço (`0x02`), e as duas dariam MISS em toda volta. O objetivo do exemplo é mostrar o ganho no laço (§6.3), não esse conflito.
+- O campo `changes` continua listando apenas registradores, memória e saídas de E/S. O que acontece na cache aparece no campo `cache` da microetapa e em `lastEvent` de cada linha.
+
+### D10 (revisão na Fase 3)
+- Com a cache, uma leitura custa **1 ciclo em HIT** e **5 em MISS** (1 + 4 de espera). A escrita custa sempre 5 (write-through).
+
 ### D4 (revisão na Fase 2)
 - `MachineState` recebeu `aluOutput` (D9) e `microIndex` (D9). `phase` passou a indicar a fase da **próxima** microetapa (ou `HALT`).
 
@@ -107,4 +124,7 @@ Resumo da especificação já definida no `CLAUDE.md` §4:
 - **Loader em uma única microetapa:** a cópia disco → RAM é mostrada como uma única etapa, e não palavra a palavra.
 - **Sequenciamento estritamente sequencial:** uma microetapa por vez, sem paralelismo entre busca e execução (sem pipeline, §4.1).
 
-> As simplificações da cache serão acrescentadas na Fase 3.
+- **Cache de 1 palavra por linha:** sem blocos de várias palavras, portanto sem localidade espacial; o ganho vem só da localidade temporal (reuso, como no laço).
+- **Posição da cache no diagrama:** a cache aparece entre a CPU e a RAM, ligada ao mesmo conjunto de barramentos. Em um processador real, a L1 fica dentro do chip da CPU. Em um HIT, o dado percorre apenas o trecho CPU ↔ cache, e a RAM não é acionada.
+- **Um único nível de cache (L1)**, sem L2/L3 e sem caches separadas de instruções e dados.
+- **Latência de HIT absorvida na microetapa:** o ciclo de acesso à cache é o próprio ciclo da microetapa de consulta.

@@ -71,6 +71,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
     "activeComponents": [
       "CONTROL_UNIT",
       "MAR",
+      "CACHE",
       "RAM",
     ],
     "buses": {
@@ -80,16 +81,22 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
         "MEM_READ",
       ],
     },
+    "cache": {
+      "index": 0,
+      "tag": 0,
+      "type": "MISS",
+    },
     "changes": [],
     "cycle": 6,
-    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x00. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "explanation": "A UC ativa MEM_READ e consulta a cache: o endereço 0x00 tem tag 0x00 e índice 0. A linha 0 está vazia (bit de validade = 0): MISS. O dado precisa vir da RAM, e a CPU aguarda 4 ciclos de espera (wait states).",
     "phase": "FETCH",
-    "title": "MEM_READ: leitura da RAM",
+    "title": "MEM_READ: consulta à cache",
     "waitCycles": 4,
   },
   {
     "activeComponents": [
       "RAM",
+      "CACHE",
       "MDR",
     ],
     "buses": {
@@ -108,7 +115,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
       },
     ],
     "cycle": 7,
-    "explanation": "A RAM coloca a palavra 0x10F0 no barramento de dados e o MDR a armazena.",
+    "explanation": "A RAM coloca a palavra 0x10F0 no barramento de dados. A cache guarda uma cópia na linha 0 (tag 0x00) e o MDR armazena a palavra.",
     "phase": "FETCH",
     "title": "MDR ← M[MAR]",
   },
@@ -198,9 +205,14 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
         "MEM_READ",
       ],
     },
+    "cache": {
+      "index": 0,
+      "tag": 30,
+      "type": "BYPASS",
+    },
     "changes": [],
     "cycle": 11,
-    "explanation": "A UC ativa MEM_READ. O endereço 0xF0 pertence à região de E/S: a RAM não responde e o pedido vai para o teclado.",
+    "explanation": "A UC ativa MEM_READ. O endereço 0xF0 pertence à região de E/S: a cache é ignorada (BYPASS), a RAM não responde e o pedido vai para o teclado.",
     "instruction": "LOAD R0, [0xF0]",
     "phase": "EXECUTE",
     "title": "MEM_READ: endereço de E/S",
@@ -303,6 +315,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
     "activeComponents": [
       "CONTROL_UNIT",
       "MAR",
+      "CACHE",
       "RAM",
     ],
     "buses": {
@@ -312,16 +325,22 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
         "MEM_READ",
       ],
     },
+    "cache": {
+      "index": 1,
+      "tag": 0,
+      "type": "MISS",
+    },
     "changes": [],
     "cycle": 20,
-    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x01. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "explanation": "A UC ativa MEM_READ e consulta a cache: o endereço 0x01 tem tag 0x00 e índice 1. A linha 1 está vazia (bit de validade = 0): MISS. O dado precisa vir da RAM, e a CPU aguarda 4 ciclos de espera (wait states).",
     "phase": "FETCH",
-    "title": "MEM_READ: leitura da RAM",
+    "title": "MEM_READ: consulta à cache",
     "waitCycles": 4,
   },
   {
     "activeComponents": [
       "RAM",
+      "CACHE",
       "MDR",
     ],
     "buses": {
@@ -340,7 +359,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
       },
     ],
     "cycle": 21,
-    "explanation": "A RAM coloca a palavra 0x1420 no barramento de dados e o MDR a armazena.",
+    "explanation": "A RAM coloca a palavra 0x1420 no barramento de dados. A cache guarda uma cópia na linha 1 (tag 0x00) e o MDR armazena a palavra.",
     "phase": "FETCH",
     "title": "MDR ← M[MAR]",
   },
@@ -421,6 +440,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
     "activeComponents": [
       "CONTROL_UNIT",
       "MAR",
+      "CACHE",
       "RAM",
     ],
     "buses": {
@@ -430,17 +450,23 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
         "MEM_READ",
       ],
     },
+    "cache": {
+      "index": 0,
+      "tag": 4,
+      "type": "MISS",
+    },
     "changes": [],
     "cycle": 29,
-    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x20. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "explanation": "A UC ativa MEM_READ e consulta a cache: o endereço 0x20 tem tag 0x04 e índice 0. A linha 0 guarda a tag 0x00, de outro endereço: MISS. O dado precisa vir da RAM, e a CPU aguarda 4 ciclos de espera (wait states).",
     "instruction": "LOAD R1, [0x20]",
     "phase": "EXECUTE",
-    "title": "MEM_READ: leitura da RAM",
+    "title": "MEM_READ: consulta à cache",
     "waitCycles": 4,
   },
   {
     "activeComponents": [
       "RAM",
+      "CACHE",
       "MDR",
     ],
     "buses": {
@@ -459,7 +485,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
       },
     ],
     "cycle": 30,
-    "explanation": "A RAM coloca a palavra 0x0007 no barramento de dados e o MDR a armazena.",
+    "explanation": "A RAM coloca a palavra 0x0007 no barramento de dados. A cache guarda uma cópia na linha 0 (tag 0x04) e o MDR armazena a palavra.",
     "instruction": "LOAD R1, [0x20]",
     "phase": "EXECUTE",
     "title": "MDR ← M[MAR]",
@@ -517,6 +543,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
     "activeComponents": [
       "CONTROL_UNIT",
       "MAR",
+      "CACHE",
       "RAM",
     ],
     "buses": {
@@ -526,16 +553,22 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
         "MEM_READ",
       ],
     },
+    "cache": {
+      "index": 2,
+      "tag": 0,
+      "type": "MISS",
+    },
     "changes": [],
     "cycle": 37,
-    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x02. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "explanation": "A UC ativa MEM_READ e consulta a cache: o endereço 0x02 tem tag 0x00 e índice 2. A linha 2 está vazia (bit de validade = 0): MISS. O dado precisa vir da RAM, e a CPU aguarda 4 ciclos de espera (wait states).",
     "phase": "FETCH",
-    "title": "MEM_READ: leitura da RAM",
+    "title": "MEM_READ: consulta à cache",
     "waitCycles": 4,
   },
   {
     "activeComponents": [
       "RAM",
+      "CACHE",
       "MDR",
     ],
     "buses": {
@@ -554,7 +587,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
       },
     ],
     "cycle": 38,
-    "explanation": "A RAM coloca a palavra 0x5100 no barramento de dados e o MDR a armazena.",
+    "explanation": "A RAM coloca a palavra 0x5100 no barramento de dados. A cache guarda uma cópia na linha 2 (tag 0x00) e o MDR armazena a palavra.",
     "phase": "FETCH",
     "title": "MDR ← M[MAR]",
   },
@@ -696,6 +729,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
     "activeComponents": [
       "CONTROL_UNIT",
       "MAR",
+      "CACHE",
       "RAM",
     ],
     "buses": {
@@ -705,16 +739,22 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
         "MEM_READ",
       ],
     },
+    "cache": {
+      "index": 3,
+      "tag": 0,
+      "type": "MISS",
+    },
     "changes": [],
     "cycle": 49,
-    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x03. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "explanation": "A UC ativa MEM_READ e consulta a cache: o endereço 0x03 tem tag 0x00 e índice 3. A linha 3 está vazia (bit de validade = 0): MISS. O dado precisa vir da RAM, e a CPU aguarda 4 ciclos de espera (wait states).",
     "phase": "FETCH",
-    "title": "MEM_READ: leitura da RAM",
+    "title": "MEM_READ: consulta à cache",
     "waitCycles": 4,
   },
   {
     "activeComponents": [
       "RAM",
+      "CACHE",
       "MDR",
     ],
     "buses": {
@@ -733,7 +773,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
       },
     ],
     "cycle": 50,
-    "explanation": "A RAM coloca a palavra 0x20F1 no barramento de dados e o MDR a armazena.",
+    "explanation": "A RAM coloca a palavra 0x20F1 no barramento de dados. A cache guarda uma cópia na linha 3 (tag 0x00) e o MDR armazena a palavra.",
     "phase": "FETCH",
     "title": "MDR ← M[MAR]",
   },
@@ -832,9 +872,14 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
       ],
       "data": 12,
     },
+    "cache": {
+      "index": 1,
+      "tag": 30,
+      "type": "BYPASS",
+    },
     "changes": [],
     "cycle": 54,
-    "explanation": "A UC ativa MEM_WRITE e o MDR coloca 12 no barramento de dados. O endereço 0xF1 é de E/S: a RAM ignora a escrita e o pedido vai para o display.",
+    "explanation": "A UC ativa MEM_WRITE e o MDR coloca 12 no barramento de dados. O endereço 0xF1 é de E/S: a cache é ignorada (BYPASS), a RAM ignora a escrita e o pedido vai para o display.",
     "instruction": "STORE R0, [0xF1]",
     "phase": "EXECUTE",
     "title": "MEM_WRITE: endereço de E/S",
@@ -892,6 +937,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
     "activeComponents": [
       "CONTROL_UNIT",
       "MAR",
+      "CACHE",
       "RAM",
     ],
     "buses": {
@@ -901,16 +947,22 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
         "MEM_READ",
       ],
     },
+    "cache": {
+      "index": 4,
+      "tag": 0,
+      "type": "MISS",
+    },
     "changes": [],
     "cycle": 61,
-    "explanation": "A UC ativa MEM_READ e a RAM localiza o endereço 0x04. Como a RAM é mais lenta que a CPU, a CPU aguarda 4 ciclos de espera (wait states).",
+    "explanation": "A UC ativa MEM_READ e consulta a cache: o endereço 0x04 tem tag 0x00 e índice 4. A linha 4 está vazia (bit de validade = 0): MISS. O dado precisa vir da RAM, e a CPU aguarda 4 ciclos de espera (wait states).",
     "phase": "FETCH",
-    "title": "MEM_READ: leitura da RAM",
+    "title": "MEM_READ: consulta à cache",
     "waitCycles": 4,
   },
   {
     "activeComponents": [
       "RAM",
+      "CACHE",
       "MDR",
     ],
     "buses": {
@@ -929,7 +981,7 @@ exports[`programas de exemplo (§6.3) > exemplo 1 — sequência completa de mic
       },
     ],
     "cycle": 62,
-    "explanation": "A RAM coloca a palavra 0xF000 no barramento de dados e o MDR a armazena.",
+    "explanation": "A RAM coloca a palavra 0xF000 no barramento de dados. A cache guarda uma cópia na linha 4 (tag 0x00) e o MDR armazena a palavra.",
     "phase": "FETCH",
     "title": "MDR ← M[MAR]",
   },

@@ -45,6 +45,7 @@ fim:    STORE R0, [0xF1]   ; mostra 0
         LDI   R2, 1
         STORE R2, [0xF2]   ; acende o LED: contagem terminada
         HLT
+        .org 0x20          ; fora das linhas da cache usadas pelo laço
 passo:  .word 1
 `,
   },

@@ -28,6 +28,31 @@ fim:    HLT
 dado:   .word 42
 `;
 
+  const FETCH_MISS = [
+    { phase: "FETCH", title: "MAR ← PC", activeComponents: ["CONTROL_UNIT", "PC", "MAR"], control: ["CLOCK"], waitCycles: undefined },
+    {
+      phase: "FETCH",
+      title: "MEM_READ: consulta à cache",
+      activeComponents: ["CONTROL_UNIT", "MAR", "CACHE", "RAM"],
+      control: ["CLOCK", "MEM_READ"],
+      waitCycles: 4,
+    },
+    {
+      phase: "FETCH",
+      title: "MDR ← M[MAR]",
+      activeComponents: ["RAM", "CACHE", "MDR"],
+      control: ["CLOCK", "MEM_READ"],
+      waitCycles: undefined,
+    },
+    {
+      phase: "FETCH",
+      title: "IR ← MDR; PC ← PC + 1",
+      activeComponents: ["CONTROL_UNIT", "MDR", "IR", "PC"],
+      control: ["CLOCK", "IR_LOAD", "PC_INC"],
+      waitCycles: undefined,
+    },
+  ];
+
   it("tem as mesmas 4 microetapas para toda instrução", () => {
     const { state, micros } = runSource(ALL_INSTRUCTIONS, 9);
     expect(state.halted).toBe(true);
@@ -35,27 +60,29 @@ dado:   .word 42
     const executed = new Set(groups.map((group) => group.find((micro) => micro.instruction)?.instruction?.split(" ")[0]));
     expect(executed.size).toBe(14);
 
+    // Nenhum endereço se repete neste programa: toda busca é um MISS.
     const fetches = groups.map((group) => group.filter((micro) => micro.phase === "FETCH").map(shape));
-    expect(fetches[0]).toEqual([
-      { phase: "FETCH", title: "MAR ← PC", activeComponents: ["CONTROL_UNIT", "PC", "MAR"], control: ["CLOCK"], waitCycles: undefined },
-      {
-        phase: "FETCH",
-        title: "MEM_READ: leitura da RAM",
-        activeComponents: ["CONTROL_UNIT", "MAR", "RAM"],
-        control: ["CLOCK", "MEM_READ"],
-        waitCycles: 4,
-      },
-      { phase: "FETCH", title: "MDR ← M[MAR]", activeComponents: ["RAM", "MDR"], control: ["CLOCK", "MEM_READ"], waitCycles: undefined },
-      {
-        phase: "FETCH",
-        title: "IR ← MDR; PC ← PC + 1",
-        activeComponents: ["CONTROL_UNIT", "MDR", "IR", "PC"],
-        control: ["CLOCK", "IR_LOAD", "PC_INC"],
-        waitCycles: undefined,
-      },
-    ]);
     for (const fetch of fetches) {
-      expect(fetch).toEqual(fetches[0]);
+      expect(fetch).toEqual(FETCH_MISS);
+    }
+  });
+
+  it("com a instrução na cache (HIT), muda só a origem do dado e a espera", () => {
+    const { micros } = runSource("LDI R0, 2\nLDI R1, 1\nloop: SUB R0, R1\nJZ fim\nJMP loop\nfim: HLT");
+    const groups = splitByInstruction(micros);
+    const secondLap = groups[5]; // 2ª execução de "SUB R0, R1"
+    expect(secondLap[1].cache).toEqual({ type: "HIT", index: 2, tag: 0 });
+    expect(secondLap.filter((micro) => micro.phase === "FETCH").map(shape)).toEqual([
+      FETCH_MISS[0],
+      { ...FETCH_MISS[1], activeComponents: ["CONTROL_UNIT", "MAR", "CACHE"], waitCycles: undefined },
+      { ...FETCH_MISS[2], activeComponents: ["CACHE", "MDR"] },
+      FETCH_MISS[3],
+    ]);
+    // Títulos e sinais de controle são os mesmos de qualquer busca.
+    const titlesAndSignals = (group: typeof secondLap) =>
+      group.filter((micro) => micro.phase === "FETCH").map((micro) => [micro.title, micro.buses.control]);
+    for (const group of groups) {
+      expect(titlesAndSignals(group)).toEqual(titlesAndSignals(groups[0]));
     }
   });
 
@@ -112,12 +139,18 @@ describe("EXECUÇÃO — microetapas e estado final por instrução", () => {
       { phase: "EXECUTE", title: "MAR ← addr", activeComponents: ["CONTROL_UNIT", "IR", "MAR"], control: ["CLOCK"], waitCycles: undefined },
       {
         phase: "EXECUTE",
-        title: "MEM_READ: leitura da RAM",
-        activeComponents: ["CONTROL_UNIT", "MAR", "RAM"],
+        title: "MEM_READ: consulta à cache",
+        activeComponents: ["CONTROL_UNIT", "MAR", "CACHE", "RAM"],
         control: ["CLOCK", "MEM_READ"],
         waitCycles: 4,
       },
-      { phase: "EXECUTE", title: "MDR ← M[MAR]", activeComponents: ["RAM", "MDR"], control: ["CLOCK", "MEM_READ"], waitCycles: undefined },
+      {
+        phase: "EXECUTE",
+        title: "MDR ← M[MAR]",
+        activeComponents: ["RAM", "CACHE", "MDR"],
+        control: ["CLOCK", "MEM_READ"],
+        waitCycles: undefined,
+      },
       {
         phase: "EXECUTE",
         title: "R3 ← MDR",
@@ -190,11 +223,12 @@ describe("EXECUÇÃO — microetapas e estado final por instrução", () => {
       {
         phase: "EXECUTE",
         title: "MEM_WRITE: M[MAR] ← MDR",
-        activeComponents: ["CONTROL_UNIT", "MAR", "MDR", "RAM"],
+        activeComponents: ["CONTROL_UNIT", "MAR", "MDR", "CACHE", "RAM"],
         control: ["CLOCK", "MEM_WRITE"],
         waitCycles: 4,
       },
     ]);
+    expect(steps[1].cache).toEqual({ type: "WRITE", index: 0, tag: 6 });
     expect(steps[1].buses).toEqual({ address: 0x30, data: 5, control: ["CLOCK", "MEM_WRITE"] });
     expect(steps[1].changes).toEqual([{ target: "M[0x30]", from: 0, to: 5 }]);
     expect(state.memory[0x30]).toBe(5);
