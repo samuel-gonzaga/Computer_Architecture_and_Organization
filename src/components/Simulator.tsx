@@ -17,6 +17,7 @@ import { executionStats } from "@/components/panels/stats";
 import { StatsPanel } from "@/components/panels/StatsPanel";
 import { StepExplanation } from "@/components/panels/StepExplanation";
 import { Timeline } from "@/components/panels/Timeline";
+import { SiteNav } from "@/components/SiteNav";
 import { useSimulation } from "@/store/simulation";
 
 /** Tela do simulador (§6.1): controles no topo, editor à esquerda, diagrama e abas no centro, painéis à direita. */
@@ -50,11 +51,15 @@ export function Simulator() {
             <div>
               <h1 className="text-2xl font-bold leading-none tracking-wide">NeoCore Computer Lab</h1>
               <p className="mt-1 text-sm text-ink-muted">
-                Programa: <span className="font-semibold text-ink">{programName}</span>
+                Veja a CPU buscar, decodificar e executar cada instrução · Programa:{" "}
+                <span className="font-semibold text-ink">{programName}</span>
               </p>
             </div>
             <PhaseIndicator phase={micro?.phase} halted={machine.halted} cycle={machine.cycle} />
-            <ThemeToggle />
+            <div className="flex flex-wrap items-center gap-2">
+              <SiteNav current="/" />
+              <ThemeToggle />
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button

@@ -4,7 +4,7 @@ Simulador web didático da arquitetura interna de um computador. Ele mostra, mic
 
 Trabalho final da disciplina **Computer Architecture and Organization** (UniFECAF), como prova de conceito para a empresa fictícia NeoCore Tech.
 
-> **Status:** Fase 5 (painéis, controles e editor) concluída. O simulador já pode ser usado: rode `npm run dev`. Faltam o tour, a página "Sobre", a documentação final e o deploy.
+> **Status:** Fase 6 (tour guiado, página Sobre e roteiro do vídeo) concluída. Faltam a documentação final (relatório) e o deploy.
 
 ## Links
 
@@ -45,6 +45,8 @@ npm run build      # build estático em out/
 | `←` | voltar uma microetapa |
 | `Espaço` | executar / pausar |
 | `R` | reset |
+
+Além do simulador (`/`), o app tem o **Tour guiado** (`/tour`), que executa o exemplo 1 em 7 cenas sincronizadas com o [roteiro do vídeo](docs/roteiro-video.md), e a página **Sobre** (`/sobre`), com a arquitetura, o conjunto de instruções e o glossário.
 
 Os programas podem ser salvos e reabertos como arquivos **`.neocore.json`** (botões Exportar/Importar no editor). O diagrama pode ser exportado como PNG.
 

@@ -157,6 +157,19 @@ Resumo da especificação já definida no `CLAUDE.md` §4:
 - **Vitest, projeto `components`:** a store (critério de aceite da fase: voltar/avançar consistentes e programa próprio), os painéis e o diagrama renderizados com `react-dom/server`, a formatação e o arquivo `.neocore.json`.
 - **Playwright:** o único fluxo E2E da §8 (`tests/e2e/simulador.spec.ts`), em uma porta dedicada (3100) para nunca reaproveitar por engano outro servidor aberto na porta 3000.
 
+### D22 — Modo Roteiro, o `/tour` (Fase 6)
+- **Uma execução real, em ordem:** o tour mostra o exemplo 1 (entrada 5) do primeiro ao último frame, sem pular nem repetir. Cada cena cobre um trecho e um tópico do pitch: contexto (antes do boot), arquitetura (o BOOT, com programa e dado na mesma RAM), CPU (`LOAD R0, [0xF0]`), memória/cache/barramentos (`LOAD R1, [0x20]`, com MISS e espera), ciclo completo (`ADD R0, R1`), E/S (`STORE R0, [0xF1]`) e valor pedagógico (`HLT`).
+- **Nada é encenado:** as cenas não criam microetapas falsas para destacar componentes; o diagrama mostra sempre a microetapa real do motor, e a fala explica o que está aceso.
+- **Tempo:** 20 + 30 + 30 + 35 + 60 + 25 + 20 = **220 s (3min40s)**, exatamente o máximo da §10, deixando 20 s de margem nos 4 minutos do vídeo. Dentro de cada cena, os frames são distribuídos igualmente pela duração; na cena 5, por exemplo, cada uma das 8 microetapas do `ADD` fica 7,5 s na tela.
+- **Relógio:** usa o horário real (`performance.now`), não a soma de intervalos, para não atrasar durante a gravação. Espaço pausa e retoma; ← e → trocam de cena.
+- **Fonte única das falas:** as cenas ficam em `src/components/tour/scenes.ts`, e o roteiro em `docs/roteiro-video.md`. Um teste lê o roteiro e falha se título, duração, tempo de início/fim ou fala divergirem do tour.
+- **Quadro "Memória (RAM)":** a janela da RAM no diagrama acompanha o PC e não mostraria o dado em 0x20. O tour lista as palavras não nulas da RAM, marcando "instrução" ou "dado" segundo a listagem do assembler (`.word`), e não por posição na memória.
+
+### D23 — Página `/sobre` (Fase 6)
+- Reúne o contexto da NeoCore (R1), a justificativa da arquitetura (R2), o diagrama geral (R3), os parâmetros, a ISA, a hierarquia de memória, os barramentos e a E/S, o ciclo de instrução, as simplificações e um glossário.
+- **Gerada a partir do código, no build:** a tabela da ISA vem de `ISA` (`src/core/isa.ts`); a tabela de microetapas do `ADD R0, R1` e as estatísticas da cache do exemplo 2 vêm da execução real do motor. Assim, a página não pode divergir do simulador, e as tabelas servem diretamente para o relatório (seções 5 e 8).
+- A tela inicial ganhou uma linha de contexto e a navegação Simulador · Tour guiado · Sobre, presente nas três páginas.
+
 ### D10 (revisão na Fase 3)
 - Com a cache, uma leitura custa **1 ciclo em HIT** e **5 em MISS** (1 + 4 de espera). A escrita custa sempre 5 (write-through).
 
