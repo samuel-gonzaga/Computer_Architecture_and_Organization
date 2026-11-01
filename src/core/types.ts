@@ -49,6 +49,45 @@ export type ComponentId =
 /** Registradores de uso geral R0–R3 (16 bits). */
 export type RegisterIndex = 0 | 1 | 2 | 3;
 
+/** Mnemônicos da ISA NeoCore-8 (§4.4). */
+export type Mnemonic =
+  | "NOP"
+  | "LOAD"
+  | "STORE"
+  | "LDI"
+  | "MOV"
+  | "ADD"
+  | "SUB"
+  | "AND"
+  | "OR"
+  | "NOT"
+  | "JMP"
+  | "JZ"
+  | "JN"
+  | "HLT";
+
+/** Operações executadas pela ULA (as instruções que atualizam flags). */
+export type AluOp = "ADD" | "SUB" | "AND" | "OR" | "NOT";
+
+/** Campos brutos de uma palavra de instrução (§4.3). */
+export type InstructionFields = {
+  readonly opcode: number; // bits 15–12
+  readonly rd: RegisterIndex; // bits 11–10
+  readonly rs: RegisterIndex; // bits 9–8
+  readonly operand: number; // bits 7–0: imediato ou endereço
+};
+
+/**
+ * Instrução decodificada. Todos os campos são mantidos, mesmo os que a
+ * instrução não usa, para que encode(decode(w)) === w.
+ */
+export type Instruction = {
+  readonly mnemonic: Mnemonic;
+  readonly rd: RegisterIndex;
+  readonly rs: RegisterIndex;
+  readonly operand: number;
+};
+
 /** Flags de estado produzidas pela ULA. */
 export type Flags = {
   readonly Z: boolean; // zero
