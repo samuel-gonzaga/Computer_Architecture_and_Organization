@@ -1,12 +1,23 @@
 # Decisões de arquitetura
 
-Registro das justificativas e simplificações do NeoCore Computer Lab. Este documento alimenta o relatório técnico (seções 2 a 8). A especificação de referência é a §4 do `CLAUDE.md` ("NeoCore-8"); cada decisão abaixo indica a fase em que foi tomada.
+Registro das justificativas e simplificações do NeoCore Computer Lab. Este documento alimenta o [relatório técnico](relatorio/relatorio.md). A especificação de referência é a §4 do `CLAUDE.md` ("NeoCore-8"); cada decisão abaixo indica a fase em que foi tomada.
+
+## Índice
+
+| Tema | Decisões | Seção do relatório |
+|---|---|---|
+| Arquitetura e ISA | seção 1, D5, D8 | 2, 8 |
+| CPU (UC, ULA, registradores) | D3, D4, D6, D9 | 4, 8 |
+| Ciclos e microetapas | D10, D11, D13 | 7, 8 |
+| Memória, cache e E/S | D7, D12, D14 | 5, 6.1 |
+| Interface (diagrama, painéis, controles) | D15, D16, D18, D19, D20 | 3, 6, 9 |
+| Tour, página Sobre e documentação | D22, D23, D24 | 9, apêndices |
+| Infraestrutura e testes | D1, D2, D17, D21 | Apêndice A |
+| Simplificações declaradas | seção 3 | 9 |
 
 ## 1. Arquitetura simulada
 
-> Seção a ser detalhada nas fases 1 a 3, à medida que o núcleo for implementado.
-
-Resumo da especificação já definida no `CLAUDE.md` §4:
+Resumo da especificação (`CLAUDE.md` §4), detalhada nas decisões da seção 2:
 
 - **Von Neumann:** memória única para instruções e dados, com um único conjunto de barramentos. Isso evidencia o gargalo de Von Neumann na contagem de ciclos.
 - **Traços RISC:** modelo load/store, instrução de formato fixo (16 bits) e ISA com 14 instruções.
@@ -31,9 +42,9 @@ Resumo da especificação já definida no `CLAUDE.md` §4:
 - Os dispositivos de E/S também são individuais (`KEYBOARD`, `DISPLAY`, `LED`), porque cada um ocupa um endereço próprio.
 - Os barramentos não são `ComponentId`. Eles são descritos pelo campo `buses` de cada `MicroStep` (endereço, dado e sinais de controle), conforme a §5.2.
 
-### D4 — `MachineState` provisório (Fase 0)
+### D4 — `MachineState` (Fase 0, revisado na Fase 2)
 - `src/core/types.ts` declara um `MachineState` imutável (`readonly`) derivado dos parâmetros da §4.2 e §4.5: registradores, especiais, flags, memória de 256 palavras, cache de 8 linhas com contadores, E/S, disco, ciclo, fase e erro didático.
-- A Fase 2 (UC e máquina) pode acrescentar campos internos necessários para avançar microetapa por microetapa. Qualquer mudança será registrada aqui.
+- *Fase 2:* o estado recebeu `aluOutput` e `microIndex` (D9), e `phase` passou a indicar a fase da **próxima** microetapa (ou `HALT`).
 
 ### D5 — Codificação e decodificação (Fase 1, `isa.ts`)
 - Os campos que uma instrução não usa (ex.: `rs` em `LDI`, `rd`/`rs` em `JMP`) são gravados como `0` pelo montador. Na decodificação, porém, eles são **lidos e mantidos**: a UC extrai os quatro campos de qualquer palavra, como o hardware faz, e simplesmente ignora os que não interessam. Isso garante `encode(decode(w)) === w` para toda palavra com opcode válido, o que é verificado exaustivamente nas 65.536 palavras.
@@ -70,10 +81,11 @@ Resumo da especificação já definida no `CLAUDE.md` §4:
 - `NOP` ganhou uma microetapa explícita, para que o aluno veja que ela também passa pela execução.
 - A saída da ULA fica guardada em `aluOutput` entre o cálculo (que atualiza as flags) e a escrita em `rd`, como o registrador de saída da ULA em uma CPU real.
 
-### D10 — Ciclos de clock (Fase 2, `machine.ts`)
+### D10 — Ciclos de clock (Fase 2, `machine.ts`; revisado na Fase 3)
 - Cada microetapa da CPU dura **1 ciclo**. Os acessos à RAM (leitura na busca, leitura em `LOAD`, escrita em `STORE`) somam **4 ciclos de espera** (wait states, §4.5), visíveis no campo `waitCycles`.
 - O **BOOT não consome ciclos**: o carregamento do disco acontece antes de a CPU começar a executar (§4.5: "apenas no carregamento"). Avançar uma máquina parada também não consome ciclos.
-- Resultado sem cache: uma busca custa 8 ciclos (1 + 5 + 1 + 1), e o exemplo 1 termina em **65 ciclos**. A Fase 3 vai reduzir esse número com acertos na cache.
+- Sem cache, uma busca custa 8 ciclos (1 + 5 + 1 + 1), e o exemplo 1 termina em **65 ciclos**.
+- *Fase 3:* com a cache, uma leitura custa **1 ciclo em HIT** e **5 em MISS** (1 + 4 de espera); a escrita custa sempre 5 (write-through). O exemplo 1 continua com 65 ciclos (nenhum endereço se repete); o exemplo 2 cai de 350 para 258.
 
 ### D11 — Barramentos e sinais de controle nas microetapas (Fase 2)
 - `buses.address` e `buses.data` representam apenas o **barramento do sistema** (CPU ↔ memória/E/S). As transferências internas da CPU (ex.: `R0 → MDR`, `MDR → IR`, entrada da ULA) não preenchem esses campos.
@@ -170,23 +182,23 @@ Resumo da especificação já definida no `CLAUDE.md` §4:
 - **Gerada a partir do código, no build:** a tabela da ISA vem de `ISA` (`src/core/isa.ts`); a tabela de microetapas do `ADD R0, R1` e as estatísticas da cache do exemplo 2 vêm da execução real do motor. Assim, a página não pode divergir do simulador, e as tabelas servem diretamente para o relatório (seções 5 e 8).
 - A tela inicial ganhou uma linha de contexto e a navegação Simulador · Tour guiado · Sobre, presente nas três páginas.
 
-### D10 (revisão na Fase 3)
-- Com a cache, uma leitura custa **1 ciclo em HIT** e **5 em MISS** (1 + 4 de espera). A escrita custa sempre 5 (write-through).
-
-### D4 (revisão na Fase 2)
-- `MachineState` recebeu `aluOutput` (D9) e `microIndex` (D9). `phase` passou a indicar a fase da **próxima** microetapa (ou `HALT`).
+### D24 — Relatório técnico (Fase 7, `docs/relatorio/`)
+- **Fonte:** `docs/relatorio/relatorio.md`, com as seções 1–9 e os apêndices da matriz §11.
+- **Capturas reais e reproduzíveis:** as 11 figuras de `docs/relatorio/img/` são geradas por `npm run capturas`, que abre o app real (Playwright, tema claro, movimento reduzido) e fotografa microetapas exatas do exemplo 1 e o fim do exemplo 2. Se o app mudar, basta rodar o comando de novo. O script usa uma configuração própria do Playwright; o único teste E2E da §8 continua sendo `tests/e2e/simulador.spec.ts`.
+- **Coerência verificada:** `tests/docs/relatorio.test.ts` confere contra o motor a tabela de microetapas de `ADD R0, R1`, os ciclos de cada instrução do exemplo 1, o código de máquina, as estatísticas da cache, o arquivo `.neocore.json` do Apêndice A e a existência de todas as figuras. Se o simulador mudar e o relatório não, o teste falha.
+- **PDF sem dependências novas:** `npm run relatorio:pdf` converte o Markdown (um subconjunto simples, tratado pelo próprio script) e imprime em A4 com o Chromium do Playwright, já instalado para o E2E. Com `RELATORIO_HTML=caminho`, o HTML intermediário também é salvo, para revisão.
+- **Campos a preencher** ficam marcados como `⟨preencher: …⟩` (nome do autor, link da Vercel, do repositório e do vídeo) e aparecem destacados no PDF.
+- O indicador flutuante do modo de desenvolvimento do Next foi desligado (`devIndicators: false`), porque apareceria nas capturas e na gravação do vídeo.
 
 ## 3. Simplificações declaradas
 
 - **Endereçamento por palavra:** cada endereço contém uma palavra de 16 bits; não há acesso a bytes individuais.
 - **Imediato de 8 bits sem sinal** em `LDI` (ver D8); constantes maiores ou negativas ficam na memória.
 - **Sem pilha, sub-rotinas ou modos de endereçamento indireto/indexado:** os endereços de `LOAD`/`STORE`/saltos são sempre absolutos e fixos na instrução.
-
 - **Latência fixa da RAM:** todo acesso custa os mesmos 4 ciclos de espera, sem rajadas, refresh ou variação por endereço.
 - **Dispositivos de E/S instantâneos:** respondem sem ciclos de espera e sem protocolo de handshake ou status de "pronto"; não há interrupções nem DMA (§2, regra 6).
 - **Loader em uma única microetapa:** a cópia disco → RAM é mostrada como uma única etapa, e não palavra a palavra.
 - **Sequenciamento estritamente sequencial:** uma microetapa por vez, sem paralelismo entre busca e execução (sem pipeline, §4.1).
-
 - **Cache de 1 palavra por linha:** sem blocos de várias palavras, portanto sem localidade espacial; o ganho vem só da localidade temporal (reuso, como no laço).
 - **Posição da cache no diagrama:** a cache aparece entre a CPU e a RAM, ligada ao mesmo conjunto de barramentos. Em um processador real, a L1 fica dentro do chip da CPU. Em um HIT, o dado percorre apenas o trecho CPU ↔ cache, e a RAM não é acionada.
 - **Um único nível de cache (L1)**, sem L2/L3 e sem caches separadas de instruções e dados.

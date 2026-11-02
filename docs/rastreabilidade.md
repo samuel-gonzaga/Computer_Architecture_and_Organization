@@ -6,20 +6,20 @@ Valores de Status: `pendente` · `em andamento` · `concluído`.
 
 | # | Requisito do enunciado | Onde no app | Código | Seção do relatório | Cena do vídeo | Status |
 |---|---|---|---|---|---|---|
-| R1 | Contextualização NeoCore | `/sobre`, tela inicial | `app/sobre` | 1. Contextualização | 1 | em andamento |
-| R2 | Arquitetura de referência justificada (Von Neumann + RISC) | `/sobre` | `docs/decisoes-arquitetura.md` | 2. Arquitetura escolhida | 2 | em andamento |
-| R3 | Diagrama geral | diagrama SVG (exportar PNG) | `components/diagram` | 3. Diagrama geral | 2–4 | em andamento |
-| R4 | CPU com ULA, UC e registradores | diagrama + painel de registradores | `alu.ts`, `controlUnit.ts` | 4. CPU | 3 | em andamento |
-| R5 | Hierarquia de memória e papel da cache | painel Cache + Stats + disco | `cache.ts`, `memory.ts` | 5. Hierarquia de memória | 4 | em andamento |
-| R6 | Barramentos de dados, endereços e controle | barramentos animados + sinais | `components/diagram/Bus` | 6. Barramentos | 4 | em andamento |
-| R7 | Dispositivos de E/S | teclado, display, LED | `io.ts` | 6.1 E/S mapeada em memória | 6 | em andamento |
-| R8 | Fluxo de comunicação entre componentes | animação + timeline | `machine.ts` | 7. Fluxo de dados | 5–6 | em andamento |
-| R9 | Demonstração visual do ciclo | indicador de fase + microetapas | `controlUnit.ts` | 8. Ciclo fetch–decode–execute | 5 | em andamento |
-| R10 | Simular ≥ 1 instrução com busca, decodificação e execução | exemplos 1–3 | `programs.ts` | 8.1 Execução passo a passo de `ADD R0, R1` | 5 | em andamento |
-| R11 | Etapas identificadas e explicadas | painel "O que está acontecendo" | `MicroStep.explanation` | 8 (tabelas de microetapas) | 5 | em andamento |
-| R12 | Valor pedagógico | `/tour` | `app/tour` | 9. Conclusão e trabalhos futuros | 7 | em andamento |
-| R13 | Arquivo da simulação entregue | repositório + link Vercel + export `.neocore.json` | `README.md` | Apêndice A | — | em andamento |
-| R14 | Vídeo ≤ 4 min no YouTube (não listado) | — | `docs/roteiro-video.md` | Apêndice B (link) | todas | em andamento |
+| R1 | Contextualização NeoCore | `/sobre`, tela inicial | `app/sobre` | 1. Contextualização | 1 | concluído |
+| R2 | Arquitetura de referência justificada (Von Neumann + RISC) | `/sobre` | `docs/decisoes-arquitetura.md` | 2. Arquitetura escolhida | 2 | concluído |
+| R3 | Diagrama geral | diagrama SVG (exportar PNG) | `components/diagram` | 3. Diagrama geral | 2–4 | concluído |
+| R4 | CPU com ULA, UC e registradores | diagrama + painel de registradores | `alu.ts`, `controlUnit.ts` | 4. CPU | 3 | concluído |
+| R5 | Hierarquia de memória e papel da cache | painel Cache + Stats + disco | `cache.ts`, `memory.ts` | 5. Hierarquia de memória | 4 | concluído |
+| R6 | Barramentos de dados, endereços e controle | barramentos animados + sinais | `components/diagram/Bus` | 6. Barramentos | 4 | concluído |
+| R7 | Dispositivos de E/S | teclado, display, LED | `io.ts` | 6.1 E/S mapeada em memória | 6 | concluído |
+| R8 | Fluxo de comunicação entre componentes | animação + timeline | `machine.ts` | 7. Fluxo de dados | 5–6 | concluído |
+| R9 | Demonstração visual do ciclo | indicador de fase + microetapas | `controlUnit.ts` | 8. Ciclo fetch–decode–execute | 5 | concluído |
+| R10 | Simular ≥ 1 instrução com busca, decodificação e execução | exemplos 1–3 | `programs.ts` | 8.1 Execução passo a passo de `ADD R0, R1` | 5 | concluído |
+| R11 | Etapas identificadas e explicadas | painel "O que está acontecendo" | `MicroStep.explanation` | 8 (tabelas de microetapas) | 5 | concluído |
+| R12 | Valor pedagógico | `/tour` | `app/tour` | 9. Conclusão e trabalhos futuros | 7 | concluído |
+| R13 | Arquivo da simulação entregue | repositório + link Vercel + export `.neocore.json` | `README.md` | Apêndice A | — | em andamento: falta o link da Vercel (Fase 8) |
+| R14 | Vídeo ≤ 4 min no YouTube (não listado) | — | `docs/roteiro-video.md` | Apêndice B (link) | todas | em andamento: falta gravar e publicar o vídeo |
 
 ## Histórico
 
@@ -55,3 +55,26 @@ Valores de Status: `pendente` · `em andamento` · `concluído`.
   - **R11 (em andamento):** a tabela de microetapas do `ADD R0, R1` em `/sobre` é gerada pelo motor e já serve à seção 8 do relatório.
   - **R12 → em andamento:** o `/tour` está pronto, com a cena 7 sobre o valor pedagógico. Falta a seção 9 do relatório.
   - **R14 → em andamento:** o roteiro do vídeo está escrito e sincronizado com o tour. Falta gravar e publicar o vídeo.
+- **Fase 7 (Documentação):** relatório técnico em `docs/relatorio/` (Markdown, 11 capturas reais do app e PDF de 22 páginas), decisões de arquitetura reorganizadas e README final. Um teste confere o relatório contra o motor (213 testes no Vitest).
+  - **R1–R12 → concluído:** cada item tem a parte do app, o código, a seção do relatório e a cena do roteiro (tabela abaixo).
+  - **R13 (em andamento):** repositório, README, exemplos e `.neocore.json` prontos; falta o link da Vercel (Fase 8), que entra no README e no Apêndice A.
+  - **R14 (em andamento):** roteiro e tour prontos (3min40s); falta gravar e publicar o vídeo como não listado e colocar o link no README e no Apêndice B.
+
+## Verificação item a item (Fase 7)
+
+| # | App | Código | Relatório | Cena do roteiro |
+|---|---|---|---|---|
+| R1 | `/sobre` §1 e linha de contexto na tela inicial | `src/app/sobre/page.tsx` | 1. Contextualização | 1 |
+| R2 | `/sobre` §2 | `docs/decisoes-arquitetura.md` (seção 1) | 2. Arquitetura escolhida (Figura 1) | 2 |
+| R3 | diagrama SVG + Exportar PNG | `src/components/diagram/` | 3. Diagrama geral (Figura 2) | 2–4 |
+| R4 | diagrama + painel de registradores e flags | `src/core/alu.ts`, `src/core/controlUnit.ts` | 4. CPU (Figura 3) | 3 |
+| R5 | abas Cache e Estatísticas, disco no diagrama | `src/core/cache.ts`, `src/core/memory.ts` | 5. Hierarquia de memória (Figuras 4–6) | 4 |
+| R6 | barramentos com trecho, valor e sinais | `src/components/diagram/Bus.tsx` | 6. Barramentos | 4 |
+| R7 | teclado (campo 0xF0), display e LED | `src/core/io.ts` | 6.1 E/S mapeada em memória (Figuras 7–8) | 6 |
+| R8 | animação dos barramentos + linha do tempo | `src/core/machine.ts` | 7. Fluxo de dados (Figura 9) | 5–6 |
+| R9 | indicador BUSCA → DECODIFICAÇÃO → EXECUÇÃO | `src/core/controlUnit.ts` | 8. Ciclo (Figura 10) | 5 |
+| R10 | exemplos 1–3 no editor | `src/core/programs.ts` | 8.1 `ADD R0, R1` passo a passo | 5 |
+| R11 | painel "O que está acontecendo" | `MicroStep.explanation` | 8 e 8.1 (tabelas de microetapas) | 5 |
+| R12 | `/tour` | `src/components/tour/`, `src/app/tour/` | 9. Conclusão e trabalhos futuros (Figura 11) | 7 |
+| R13 | repositório + `.neocore.json` (Vercel na Fase 8) | `README.md` | Apêndice A | — |
+| R14 | — | `docs/roteiro-video.md` | Apêndice B (link a preencher) | todas |

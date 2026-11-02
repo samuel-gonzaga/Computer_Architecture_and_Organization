@@ -8,7 +8,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "capturas": "playwright test -c playwright.capturas.config.ts",
+    "relatorio:pdf": "node scripts/relatorio-pdf.mjs"
   },
   "dependencies": {
     "framer-motion": "^14.9.0",

@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   // cacheComponents/partialPrefetching (padrão do create-next-app) foram removidos:
   // o PPR não é compatível com output "export".
   output: "export",
+  // Sem o indicador flutuante do modo dev: ele apareceria nas capturas do relatório e no vídeo.
+  devIndicators: false,
   turbopack: {
     rules: {
       "*.css": {
