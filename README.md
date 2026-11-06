@@ -6,8 +6,9 @@ Trabalho final da disciplina **Computer Architecture and Organization** (UniFECA
 
 ## Links
 
-- **Aplicação (Vercel):** ⟨preencher na Fase 8⟩
-- **Vídeo pitch (YouTube, não listado):** ⟨preencher após a gravação⟩
+- **Aplicação (Vercel):** [https://computerarch.vercel.app/](https://computerarch.vercel.app/)
+- **Vídeo pitch (YouTube, não listado, 3min57s):** [https://youtu.be/KRExI6gs2_I](https://youtu.be/KRExI6gs2_I)
+- **Repositório:** [https://github.com/samuel-gonzaga/Computer_Architecture_and_Organization](https://github.com/samuel-gonzaga/Computer_Architecture_and_Organization)
 - **Relatório técnico:** [`docs/relatorio/relatorio.pdf`](docs/relatorio/relatorio.pdf) (fonte em [`relatorio.md`](docs/relatorio/relatorio.md))
 
 ## O que o simulador faz
@@ -64,9 +65,9 @@ npm run lint           # ESLint
 | Documento | Conteúdo |
 |---|---|
 | [`docs/relatorio/relatorio.md`](docs/relatorio/relatorio.md) | relatório técnico (seções 1–9 e apêndices) |
-| [`docs/decisoes-arquitetura.md`](docs/decisoes-arquitetura.md) | justificativas e simplificações (D1–D24) |
+| [`docs/decisoes-arquitetura.md`](docs/decisoes-arquitetura.md) | justificativas e simplificações (D1–D26) |
 | [`docs/rastreabilidade.md`](docs/rastreabilidade.md) | matriz enunciado → app → código → relatório → vídeo |
-| [`docs/roteiro-video.md`](docs/roteiro-video.md) | roteiro do vídeo pitch, sincronizado com o `/tour` |
+| [`docs/roteiro-video.md`](docs/roteiro-video.md) | estrutura do vídeo publicado e roteiro do `/tour` |
 | [`CLAUDE.md`](CLAUDE.md) | especificação completa do projeto |
 
 Para atualizar o relatório depois de mudar o app:

@@ -4,11 +4,15 @@
 
 Disciplina: Computer Architecture and Organization — UniFECAF
 
-Autor: ⟨preencher: nome do autor⟩
+Autor: Samuel Gonzaga
 
 Data: novembro de 2026
 
-Aplicação: ⟨preencher na Fase 8: link da Vercel⟩ · Vídeo pitch: ⟨preencher: link do YouTube⟩
+Aplicação: [https://computerarch.vercel.app/](https://computerarch.vercel.app/)
+
+Vídeo pitch: [https://youtu.be/KRExI6gs2_I](https://youtu.be/KRExI6gs2_I)
+
+Repositório: [https://github.com/samuel-gonzaga/Computer_Architecture_and_Organization](https://github.com/samuel-gonzaga/Computer_Architecture_and_Organization)
 
 ## Sumário
 
@@ -35,11 +39,13 @@ Este trabalho entrega, como prova de conceito, o **NeoCore Computer Lab**: um si
 
 A resposta é dada **microetapa a microetapa**. A cada passo, o simulador mostra qual componente age, qual barramento é usado, qual sinal de controle é emitido e qual valor muda, acompanhado de uma explicação em português gerada pelo próprio motor da simulação. O estudante pode avançar, voltar, executar continuamente, mudar a entrada do teclado e escrever os próprios programas em assembly.
 
+**Por que um simulador próprio.** Ferramentas como o Logisim e o Tinkercad, citadas no enunciado, simulam circuitos peça por peça (portas, flip-flops, registradores). Nelas, a explicação de cada etapa ficaria fora da tela. Já os simuladores didáticos de CPU prontos, como o Neander e o Ripes, trazem uma arquitetura definida por outra pessoa, enquanto o enunciado pede para projetar uma arquitetura didática e demonstrar como o computador executa uma instrução. Por isso, a NeoCore-8 foi desenhada sob medida para os conceitos da disciplina, e a explicação de cada microetapa é gerada pelo próprio motor da simulação.
+
 ## 2. Arquitetura escolhida
 
 A NeoCore-8 é uma máquina **Von Neumann com traços RISC**, de palavra de 16 bits, sem pipeline e com E/S mapeada em memória.
 
-**Von Neumann.** Uma única memória guarda instruções e dados, e um único conjunto de barramentos liga a CPU à memória e à E/S. É a arquitetura de referência no ensino (Tanenbaum; Stallings) e torna visível o **gargalo de Von Neumann**: a busca de instruções e o acesso a dados disputam o mesmo caminho. No simulador, isso aparece na contagem de ciclos. No exemplo 1, as 6 leituras da RAM (5 delas buscas de instrução) custam 24 ciclos de espera, ou 37% dos 65 ciclos da execução.
+**Von Neumann.** Uma única memória guarda instruções e dados, e um único conjunto de barramentos liga a CPU à memória e à E/S. É a arquitetura de referência no ensino (Tanenbaum; Stallings) e torna visível o **gargalo de Von Neumann** (expressão de Backus, 1978): a busca de instruções e o acesso a dados disputam o mesmo caminho. No simulador, isso aparece na contagem de ciclos. No exemplo 1, as 6 leituras da RAM (5 delas buscas de instrução) custam 24 ciclos de espera, ou 37% dos 65 ciclos da execução.
 
 A Figura 1 mostra o boot: o *loader* copia o programa do disco para a RAM, e as instruções (a partir de `0x00`) e o dado (`7`, em `0x20`) ficam na mesma memória.
 
@@ -122,7 +128,7 @@ No painel de registradores, cada valor aparece em hexadecimal e decimal (com sin
 | Memória principal (RAM) | 256 palavras de 16 bits | +4 ciclos de espera (*wait states*) por acesso |
 | Armazenamento (disco) | guarda o programa; o *loader* o copia para a RAM no boot | só no carregamento |
 
-**Organização da cache.** A cache é **unificada** (instruções e dados), coerente com Von Neumann, e usa **mapeamento direto**. O endereço de 8 bits é dividido em **tag (5 bits) | índice (3 bits)**: o índice escolhe uma das 8 linhas e a tag identifica qual dos 32 endereços possíveis aquela linha guarda. Cada linha tem um bit de validade. Por exemplo, o endereço `0x20` = `00100 000` tem tag `0x04` e índice 0.
+**Organização da cache.** A cache é **unificada** (instruções e dados), coerente com Von Neumann, e usa **mapeamento direto**. O endereço de 8 bits é dividido em **tag (5 bits) | índice (3 bits)**: o índice escolhe uma das 8 linhas e a tag identifica qual dos 32 endereços possíveis aquela linha guarda. Cada linha tem um bit de validade. A cache unificada é uma simplificação consciente: processadores atuais costumam dividir a L1 em instruções e dados, mas uma cache unificada equilibra automaticamente a carga entre os dois e tende a ter taxa de acerto maior para o mesmo tamanho (Stallings, seção 4.3). Por exemplo, o endereço `0x20` = `00100 000` tem tag `0x04` e índice 0.
 
 **Leitura.** Na microetapa "MEM_READ: consulta à cache", um **HIT** (linha válida com a mesma tag) entrega a palavra em 1 ciclo. Um **MISS** busca a palavra na RAM, com 4 ciclos de espera, e guarda uma cópia na linha. A Figura 4 mostra o primeiro MISS do programa: a cache e a RAM acesas, o endereço `0x00` no barramento de endereços e `MEM_READ` no de controle.
 
@@ -201,7 +207,7 @@ Em todas as instruções, a busca traz a palavra da memória pelo mesmo caminho:
 
 Toda instrução passa por três fases, mostradas no indicador **BUSCA → DECODIFICAÇÃO → EXECUÇÃO** no topo do simulador.
 
-**Busca (4 microetapas, idênticas para todas as instruções).**
+**Busca (4 microetapas, idênticas para todas as instruções).** A sequência segue as micro-operações do ciclo de busca descritas por Stallings (seção 15.1).
 
 1. `MAR ← PC`: a UC coloca o PC no barramento de endereços.
 2. `MEM_READ: consulta à cache`: HIT (1 ciclo) ou MISS (1 + 4 ciclos de espera da RAM).
@@ -285,7 +291,7 @@ O NeoCore Computer Lab cumpre o objetivo da prova de conceito: mostra, de forma 
 - **Controle do ritmo.** Avançar microetapa por microetapa, voltar, executar continuamente e mudar a entrada permitem testar hipóteses ("e se o valor for negativo?") e ver a consequência imediatamente.
 - **Programas próprios.** O editor de assembly, com o código de máquina de cada linha e erros explicados em português, liga a programação de baixo nível ao que acontece no hardware.
 
-O **Modo Roteiro** (Figura 11) percorre o exemplo 1 em sete cenas, uma para cada tópico desta apresentação, e é usado para gravar o vídeo pitch (Apêndice B).
+O **Modo Roteiro** (Figura 11) percorre o exemplo 1 em sete cenas, uma para cada tópico desta apresentação, e serviu de guia para o vídeo pitch (Apêndice B).
 
 ![Figura 11 — Tour guiado, cena 5: o ciclo completo de ADD R0, R1 com a legenda da cena.](img/tour.png)
 
@@ -318,13 +324,14 @@ Também é testado que o diagrama acende exatamente os componentes e barramentos
 ## Referências
 
 - TANENBAUM, A. S.; AUSTIN, T. *Organização estruturada de computadores*. 6. ed. São Paulo: Pearson Prentice Hall, 2013.
-- STALLINGS, W. *Arquitetura e organização de computadores*. 10. ed. São Paulo: Pearson, 2017.
-- UNIFECAF. Materiais da disciplina *Computer Architecture and Organization*.
+- STALLINGS, W. *Arquitetura e organização de computadores*. 8. ed. São Paulo: Pearson Prentice Hall, 2010.
+- UNIFECAF. Materiais da disciplina *Computer Architecture and Organization*: Unidades I a IV e orientações do trabalho.
+- BACKUS, J. Can programming be liberated from the von Neumann style? *Communications of the ACM*, v. 21, n. 8, p. 613–641, 1978.
 
 ## Apêndice A — Arquivos da simulação
 
-- **Aplicação publicada:** ⟨preencher na Fase 8: link da Vercel⟩
-- **Repositório:** ⟨preencher: link do repositório⟩ — o README descreve como rodar, testar e usar o simulador.
+- **Aplicação publicada:** [https://computerarch.vercel.app/](https://computerarch.vercel.app/)
+- **Repositório:** [https://github.com/samuel-gonzaga/Computer_Architecture_and_Organization](https://github.com/samuel-gonzaga/Computer_Architecture_and_Organization) — o README descreve como rodar, testar e usar o simulador.
 - **Páginas:** `/` (simulador), `/tour` (tour guiado) e `/sobre` (arquitetura, ISA e glossário).
 - **Programas de exemplo:** *Soma simples*, *Contador com laço* e *Lógica bit a bit*, disponíveis no editor.
 - **Arquivo de simulação:** o editor exporta e importa programas no formato `.neocore.json`. O exemplo 1 fica assim:
@@ -343,16 +350,18 @@ Também é testado que o diagrama acende exatamente os componentes e barramentos
 
 ## Apêndice B — Vídeo pitch
 
-- **Link (YouTube, não listado):** ⟨preencher: link do vídeo⟩
-- **Duração:** até 4 minutos, gravado com o Modo Roteiro (`/tour`), que dura 3min40s.
-- **Roteiro:** `docs/roteiro-video.md`, com as falas sincronizadas ao tour.
+- **Link (YouTube, não listado):** [https://youtu.be/KRExI6gs2_I](https://youtu.be/KRExI6gs2_I)
+- **Duração:** 3min57s (limite do enunciado: 4 minutos).
+- **Gravação:** a tela do simulador publicado foi gravada cena por cena, executando o exemplo 1 (*Soma simples*, entrada 5 no teclado), e a narração foi gravada por cima. O Modo Roteiro (`/tour`) serviu de guia para a ordem dos tópicos.
 
-| Cena | Tempo | Tópico |
-|---|---|---|
-| 1 | 00:00–00:20 | Objetivo do simulador e problema da NeoCore |
-| 2 | 00:20–00:50 | Arquitetura escolhida: Von Neumann com traços RISC |
-| 3 | 00:50–01:20 | Componentes da CPU: UC, ULA e registradores |
-| 4 | 01:20–01:55 | Memória, cache e barramentos |
-| 5 | 01:55–02:55 | Ciclo de busca, decodificação e execução ao vivo |
-| 6 | 02:55–03:20 | Fluxo da instrução até a E/S |
-| 7 | 03:20–03:40 | Como o simulador ajuda o estudante |
+| Cena | Tempo (roteiro) | Conteúdo | Tópico do enunciado |
+|---|---|---|---|
+| 1 | 00:00–00:18 | O problema e o objetivo | Objetivo do simulador |
+| 2 | 00:18–00:45 | Por que construir um simulador próprio | Objetivo (justificativa) |
+| 3 | 00:45–01:11 | O computador inteiro na tela | Arquitetura escolhida |
+| 4 | 01:11–01:28 | Carregar o programa no editor | Fluxo de uma instrução (entrada) |
+| 5 | 01:28–01:56 | Boot e componentes da CPU | Principais componentes da CPU |
+| 6 | 01:56–02:26 | Barramentos, cache e hierarquia | Organização da memória e dos barramentos |
+| 7 | 02:26–03:01 | `ADD R0, R1` do começo ao fim | Ciclo fetch–decode–execute |
+| 8 | 03:01–03:28 | Do resultado ao display | Fluxo da instrução pela arquitetura |
+| 9 | 03:28–03:55 | O que o aluno ganha | Como a solução ajuda o estudante |

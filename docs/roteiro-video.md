@@ -1,6 +1,28 @@
 # Roteiro do vídeo pitch
 
-Vídeo de até **4 minutos**, publicado no YouTube como **não listado** (R14). Ele é gravado navegando pelo **Modo Roteiro** (`/tour`) do simulador, que executa o exemplo 1 (*Soma simples*, entrada 5 no teclado) e mostra cada cena com a legenda abaixo. O tour dura **3min40s**, o que deixa 20 segundos de margem.
+## Vídeo publicado
+
+- **Link (YouTube, não listado):** [https://youtu.be/KRExI6gs2_I](https://youtu.be/KRExI6gs2_I)
+- **Duração:** 3min57s (limite: 4 minutos).
+- **Como foi gravado:** a tela do simulador publicado ([https://computerarch.vercel.app/](https://computerarch.vercel.app/)) foi gravada cena por cena, executando o exemplo 1 com entrada 5, e a narração foi gravada por cima, na primeira pessoa. O vídeo segue a ordem de tópicos do Modo Roteiro, mas em 9 cenas, porque também mostra o editor, as abas e a justificativa de construir um simulador próprio (D25 e D26 em `docs/decisoes-arquitetura.md`).
+
+| Cena do vídeo | Tempo | Conteúdo | Tópico do enunciado | Itens da matriz |
+|---|---|---|---|---|
+| 1 | 00:00–00:18 | O problema e o objetivo | Objetivo do simulador | R1 |
+| 2 | 00:18–00:45 | Por que construir um simulador próprio | Objetivo (justificativa) | R1, R2 |
+| 3 | 00:45–01:11 | O computador inteiro na tela | Arquitetura escolhida | R2, R3 |
+| 4 | 01:11–01:28 | Carregar o programa no editor | Fluxo de uma instrução (entrada) | R10, R13 |
+| 5 | 01:28–01:56 | Boot e componentes da CPU | Principais componentes da CPU | R4, R5 |
+| 6 | 01:56–02:26 | Barramentos, cache e hierarquia | Organização da memória e dos barramentos | R5, R6 |
+| 7 | 02:26–03:01 | `ADD R0, R1` do começo ao fim | Ciclo fetch–decode–execute | R8, R9, R10, R11 |
+| 8 | 03:01–03:28 | Do resultado ao display | Fluxo da instrução pela arquitetura | R7, R8 |
+| 9 | 03:28–03:55 | O que o aluno ganha | Como a solução ajuda o estudante | R5, R12 |
+
+Os tempos são os do roteiro de gravação; a versão final ficou com 3min57s.
+
+## Roteiro do Modo Roteiro (`/tour`)
+
+O tour continua no app como guia para o estudante. Ele percorre o exemplo 1 navegando pelo **Modo Roteiro** (`/tour`) do simulador, que executa o exemplo 1 (*Soma simples*, entrada 5 no teclado) e mostra cada cena com a legenda abaixo. O tour dura **3min40s**, o que deixa 20 segundos de margem.
 
 > As falas e as durações deste roteiro são as mesmas do tour (`src/components/tour/scenes.ts`). Um teste automatizado falha se os dois divergirem; ao mudar um, mude o outro.
 
@@ -21,7 +43,7 @@ Vídeo de até **4 minutos**, publicado no YouTube como **não listado** (R14). 
 1. Abra o app em uma janela anônima, em tela cheia (1920 × 1080), e vá em **Tour**.
 2. Inicie a gravação de tela e clique em **▶ Iniciar** (ou tecle Espaço). O tour avança sozinho, no ritmo das falas.
 3. Leia a fala de cada cena enquanto ela aparece na legenda. Se precisar, pause com Espaço e retome; ← e → trocam de cena.
-4. Ao fim (03:40), pare a gravação. Publique no YouTube como **não listado** e coloque o link no README e no Apêndice B do relatório.
+4. Ao fim (03:40), pare a gravação.
 
 ## Cenas
 

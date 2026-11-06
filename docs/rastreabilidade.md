@@ -18,8 +18,8 @@ Valores de Status: `pendente` · `em andamento` · `concluído`.
 | R10 | Simular ≥ 1 instrução com busca, decodificação e execução | exemplos 1–3 | `programs.ts` | 8.1 Execução passo a passo de `ADD R0, R1` | 5 | concluído |
 | R11 | Etapas identificadas e explicadas | painel "O que está acontecendo" | `MicroStep.explanation` | 8 (tabelas de microetapas) | 5 | concluído |
 | R12 | Valor pedagógico | `/tour` | `app/tour` | 9. Conclusão e trabalhos futuros | 7 | concluído |
-| R13 | Arquivo da simulação entregue | repositório + link Vercel + export `.neocore.json` | `README.md` | Apêndice A | — | em andamento: falta o link da Vercel (Fase 8) |
-| R14 | Vídeo ≤ 4 min no YouTube (não listado) | — | `docs/roteiro-video.md` | Apêndice B (link) | todas | em andamento: falta gravar e publicar o vídeo |
+| R13 | Arquivo da simulação entregue | repositório + link Vercel + export `.neocore.json` | `README.md` | Apêndice A | — | concluído |
+| R14 | Vídeo ≤ 4 min no YouTube (não listado) | — | `docs/roteiro-video.md` | Apêndice B (link) | todas | concluído |
 
 ## Histórico
 
@@ -59,6 +59,9 @@ Valores de Status: `pendente` · `em andamento` · `concluído`.
   - **R1–R12 → concluído:** cada item tem a parte do app, o código, a seção do relatório e a cena do roteiro (tabela abaixo).
   - **R13 (em andamento):** repositório, README, exemplos e `.neocore.json` prontos; falta o link da Vercel (Fase 8), que entra no README e no Apêndice A.
   - **R14 (em andamento):** roteiro e tour prontos (3min40s); falta gravar e publicar o vídeo como não listado e colocar o link no README e no Apêndice B.
+- **Fase 8 (Deploy e revisão):** aplicação publicada na Vercel e vídeo pitch publicado no YouTube. Os três links abrem sem login, as três páginas do app carregam sem erros no console, e o teste E2E passa contra o site publicado (verificado em 06/11/2026).
+  - **R13 → concluído:** aplicação em [https://computerarch.vercel.app/](https://computerarch.vercel.app/) (as páginas `/`, `/tour` e `/sobre` respondem) e repositório público em [https://github.com/samuel-gonzaga/Computer_Architecture_and_Organization](https://github.com/samuel-gonzaga/Computer_Architecture_and_Organization), com README, exemplos e `.neocore.json`. Os links estão no README e no Apêndice A.
+  - **R14 → concluído:** vídeo em [https://youtu.be/KRExI6gs2_I](https://youtu.be/KRExI6gs2_I), não listado, com 3min57s. Foi gravado na aplicação publicada, com narração por cima, em 9 cenas que cobrem os 7 tópicos do pitch (D26). O link está no README, no cabeçalho do relatório e no Apêndice B.
 
 ## Verificação item a item (Fase 7)
 
@@ -76,5 +79,5 @@ Valores de Status: `pendente` · `em andamento` · `concluído`.
 | R10 | exemplos 1–3 no editor | `src/core/programs.ts` | 8.1 `ADD R0, R1` passo a passo | 5 |
 | R11 | painel "O que está acontecendo" | `MicroStep.explanation` | 8 e 8.1 (tabelas de microetapas) | 5 |
 | R12 | `/tour` | `src/components/tour/`, `src/app/tour/` | 9. Conclusão e trabalhos futuros (Figura 11) | 7 |
-| R13 | repositório + `.neocore.json` (Vercel na Fase 8) | `README.md` | Apêndice A | — |
-| R14 | — | `docs/roteiro-video.md` | Apêndice B (link a preencher) | todas |
+| R13 | repositório + `.neocore.json` + aplicação na Vercel | `README.md` | Apêndice A | — |
+| R14 | — | `docs/roteiro-video.md` | Apêndice B (link do vídeo) | todas |

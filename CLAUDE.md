@@ -294,6 +294,8 @@ npm run build      # build estático para Vercel
 
 Implemente um tour guiado que executa o exemplo 1 em sequência fixa, com **pausas e legendas alinhadas ao `docs/roteiro-video.md`** (uma "cena" por tópico exigido no pitch). Objetivo: o autor grava o vídeo de até 4 minutos navegando pelo tour, sem improviso, garantindo que todos os itens avaliados apareçam na ordem certa e dentro do tempo. Cada cena tem duração-alvo; o total não pode passar de 3min40s, deixando margem.
 
+> **Na entrega final**, o vídeo foi gravado na aplicação publicada, com a narração por cima, seguindo a ordem de tópicos do tour em 9 cenas (3min57s). Veja a D26 em `docs/decisoes-arquitetura.md` e `docs/roteiro-video.md`.
+
 Cenas mínimas:
 1. Objetivo do simulador e problema da NeoCore (≈20s)
 2. Arquitetura escolhida: Von Neumann + traços RISC (≈30s)
@@ -331,28 +333,28 @@ Mantenha esta tabela atualizada em `docs/rastreabilidade.md`, com a coluna "Stat
 ## 12. Entrega final — checklist
 
 **Relatório técnico (PDF)** — escrito a partir de `docs/relatorio/` e `docs/decisoes-arquitetura.md`, com capturas reais do app:
-- [ ] contextualização da solução para a NeoCore Tech
-- [ ] descrição e justificativa da arquitetura (Von Neumann + RISC, sem pipeline, E/S mapeada)
-- [ ] diagrama geral (exportado do app)
-- [ ] função da CPU, ULA, UC e registradores
-- [ ] hierarquia de memória e papel da cache (com estatística do exemplo 2)
-- [ ] barramentos de dados, endereços e controle
-- [ ] ciclo fetch–decode–execute detalhado, com tabela de microetapas de uma instrução
-- [ ] referências: Tanenbaum, Stallings, materiais da disciplina
+- [x] contextualização da solução para a NeoCore Tech
+- [x] descrição e justificativa da arquitetura (Von Neumann + RISC, sem pipeline, E/S mapeada)
+- [x] diagrama geral (exportado do app)
+- [x] função da CPU, ULA, UC e registradores
+- [x] hierarquia de memória e papel da cache (com estatística do exemplo 2)
+- [x] barramentos de dados, endereços e controle
+- [x] ciclo fetch–decode–execute detalhado, com tabela de microetapas de uma instrução
+- [x] referências: Tanenbaum, Stallings, materiais da disciplina
 
 **Simulação**
-- [ ] deploy na Vercel funcionando
-- [ ] repositório público (ou `.zip`) com README
-- [ ] exemplos 1–3 rodando até `HLT`
+- [x] deploy na Vercel funcionando
+- [x] repositório público (ou `.zip`) com README
+- [x] exemplos 1–3 rodando até `HLT`
 
 **Vídeo pitch**
-- [ ] ≤ 4 minutos, gravado com o `/tour`
-- [ ] publicado no YouTube como não listado
-- [ ] todos os 7 tópicos do enunciado presentes
+- [x] ≤ 4 minutos (3min57s), gravado na aplicação com o `/tour` como guia (D26)
+- [x] publicado no YouTube como não listado
+- [x] todos os 7 tópicos do enunciado presentes
 
 **Verificação antes de submeter**
 - [ ] PDF, link do app e link do vídeo abrem em janela anônima
-- [ ] tudo o que o relatório descreve existe no app (conferir com a matriz §11)
+- [x] tudo o que o relatório descreve existe no app (conferir com a matriz §11)
 
 ---
 

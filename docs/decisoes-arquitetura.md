@@ -6,12 +6,12 @@ Registro das justificativas e simplificações do NeoCore Computer Lab. Este doc
 
 | Tema | Decisões | Seção do relatório |
 |---|---|---|
-| Arquitetura e ISA | seção 1, D5, D8 | 2, 8 |
+| Arquitetura e ISA | seção 1, D5, D8, D25 | 1, 2, 8 |
 | CPU (UC, ULA, registradores) | D3, D4, D6, D9 | 4, 8 |
 | Ciclos e microetapas | D10, D11, D13 | 7, 8 |
 | Memória, cache e E/S | D7, D12, D14 | 5, 6.1 |
 | Interface (diagrama, painéis, controles) | D15, D16, D18, D19, D20 | 3, 6, 9 |
-| Tour, página Sobre e documentação | D22, D23, D24 | 9, apêndices |
+| Tour, página Sobre e documentação | D22, D23, D24, D26 | 9, apêndices |
 | Infraestrutura e testes | D1, D2, D17, D21 | Apêndice A |
 | Simplificações declaradas | seção 3 | 9 |
 
@@ -107,7 +107,7 @@ Resumo da especificação (`CLAUDE.md` §4), detalhada nas decisões da seção 
 
 ### D14 — Cache L1 (Fase 3, `cache.ts`)
 - **Mapeamento direto, 8 linhas de 1 palavra.** O endereço de 8 bits se divide em **tag (5 bits) | índice (3 bits)**: o índice escolhe a linha, e a tag registra qual dos 32 endereços que caem nessa linha ela está guardando. Cada linha tem um bit de validade.
-- **Unificada:** instruções e dados disputam as mesmas linhas, coerente com Von Neumann. Isso cria conflitos visíveis: no exemplo 1, o dado em `0x20` (índice 0, tag `0x04`) expulsa a instrução de `0x00` (índice 0, tag `0x00`).
+- **Unificada:** instruções e dados disputam as mesmas linhas, coerente com Von Neumann. O material da disciplina (Unidade 1) apresenta a L1 dividida, como nos processadores atuais; a cache unificada é uma simplificação consciente, sustentada por Stallings (8. ed., seção 4.3): ela equilibra a carga entre instruções e dados e tende a ter taxa de acerto maior para o mesmo tamanho. Isso cria conflitos visíveis: no exemplo 1, o dado em `0x20` (índice 0, tag `0x04`) expulsa a instrução de `0x00` (índice 0, tag `0x00`).
 - **Leitura** (busca e `LOAD`), em duas microetapas com os mesmos títulos em HIT e MISS:
   1. "MEM_READ: consulta à cache". Em **HIT**, custa 1 ciclo e ativa só a cache. Em **MISS**, custa 1 + 4 ciclos de espera e ativa cache e RAM. A explicação diz por que foi MISS: linha vazia ou tag de outro endereço.
   2. "MDR ← M[MAR]". Em HIT, a palavra vem da cache. Em MISS, vem da RAM, e a cache guarda uma cópia na linha, substituindo o que havia.
@@ -187,8 +187,19 @@ Resumo da especificação (`CLAUDE.md` §4), detalhada nas decisões da seção 
 - **Capturas reais e reproduzíveis:** as 11 figuras de `docs/relatorio/img/` são geradas por `npm run capturas`, que abre o app real (Playwright, tema claro, movimento reduzido) e fotografa microetapas exatas do exemplo 1 e o fim do exemplo 2. Se o app mudar, basta rodar o comando de novo. O script usa uma configuração própria do Playwright; o único teste E2E da §8 continua sendo `tests/e2e/simulador.spec.ts`.
 - **Coerência verificada:** `tests/docs/relatorio.test.ts` confere contra o motor a tabela de microetapas de `ADD R0, R1`, os ciclos de cada instrução do exemplo 1, o código de máquina, as estatísticas da cache, o arquivo `.neocore.json` do Apêndice A e a existência de todas as figuras. Se o simulador mudar e o relatório não, o teste falha.
 - **PDF sem dependências novas:** `npm run relatorio:pdf` converte o Markdown (um subconjunto simples, tratado pelo próprio script) e imprime em A4 com o Chromium do Playwright, já instalado para o E2E. Com `RELATORIO_HTML=caminho`, o HTML intermediário também é salvo, para revisão.
-- **Campos a preencher** ficam marcados como `⟨preencher: …⟩` (nome do autor, link da Vercel, do repositório e do vídeo) e aparecem destacados no PDF.
+- **Campos a preencher** ficam marcados como `⟨preencher: …⟩` e aparecem destacados no PDF. Na versão final, todos foram preenchidos (autor e links da Vercel, do repositório e do vídeo).
 - O indicador flutuante do modo de desenvolvimento do Next foi desligado (`devIndicators: false`), porque apareceria nas capturas e na gravação do vídeo.
+
+### D25 — Simulador próprio em vez de ferramenta pronta (Fase 7)
+- **O que as ferramentas existentes não cobrem:** o Logisim e o Tinkercad, citados no enunciado, simulam circuitos peça por peça; com eles, a explicação de cada etapa ficaria fora da ferramenta. Simuladores didáticos de CPU, como o Neander (UFRGS) e o Ripes (RISC-V), trazem uma arquitetura definida por outra pessoa.
+- **O que o projeto precisava demonstrar:** o enunciado pede para projetar uma arquitetura didática e demonstrar como o computador executa uma instrução e como os dados percorrem a arquitetura, e não apenas desenhar componentes conectados.
+- **O que se ganha:** a NeoCore-8 tem só o que a disciplina ensina; a explicação de cada microetapa é gerada pelo próprio motor (R11), e o diagrama mostra apenas o que o motor executou, com o motor coberto por testes.
+- Aparece na seção 1 do relatório e na cena 2 do vídeo.
+
+### D26 — Gravação do vídeo pitch (Fase 8)
+- O vídeo ([https://youtu.be/KRExI6gs2_I](https://youtu.be/KRExI6gs2_I), 3min57s, não listado) foi gravado na aplicação publicada: primeiro a tela, cena por cena, executando o exemplo 1 com entrada 5; depois a narração, por cima.
+- Em vez de gravar só o `/tour` com as legendas, o vídeo segue um roteiro de 9 cenas narrado na primeira pessoa, que inclui o editor, as abas e a justificativa da D25. O `/tour` serviu de guia para a ordem dos tópicos e continua no app como modo guiado para o estudante.
+- A estrutura das 9 cenas está em `docs/roteiro-video.md` e no Apêndice B do relatório. O roteiro do tour, sincronizado por teste, não mudou.
 
 ## 3. Simplificações declaradas
 
